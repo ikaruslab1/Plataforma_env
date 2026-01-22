@@ -18,7 +18,8 @@ create table profiles (
   curp text not null,
   correo text not null,
   telefono text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  role text not null default 'user'
 );
 
 -- RLS Policies
