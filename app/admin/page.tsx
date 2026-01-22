@@ -1,9 +1,7 @@
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { SearchBar } from "./search-bar"
 
-// Aseguramos que la página sea dinámica por la comprobación de cookies
 export const dynamic = "force-dynamic"
 
 type Profile = {
@@ -23,23 +21,29 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ query?: string }>
 }) {
-  // 1. Verificación de seguridad (Server-Side)
-  // En Next.js 15+, cookies() devuelve una Promesa
-  const cookieStore = await cookies()
-  const isAdmin = cookieStore.get("admin_session")?.value === "true"
+  const supabase = await createClient()
 
-  if (!isAdmin) {
-    redirect("/")
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return redirect("/")
   }
 
-  // 2. Obtener parámetros de búsqueda
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single()
+
+  if (profile?.role !== "admin") {
+    return redirect("/")
+  }
+
   const params = await searchParams
   const query = params.query || ""
 
-  // 3. Consultar datos
-  const supabase = await createClient()
-  
-  // Consulta base
   let supabaseQuery = supabase
     .from("profiles")
     .select("*")

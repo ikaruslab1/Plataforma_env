@@ -87,24 +87,11 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
   };
 }
 
-import { cookies } from "next/headers"
-
 export async function verifyUser(formData: FormData) {
   const short_id = formData.get('short_id') as string;
   
   if(!short_id) return { error: "Ingresa un ID válido." };
 
-  // Lógica de acceso Admin
-  if (short_id === "ADMIN-0000") {
-    (await cookies()).set("admin_session", "true", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24, // 24 horas
-    });
-    return { success: true, redirectUrl: "/admin" };
-  }
-  
   const supabase = await createClient();
   const { data, error } = await supabase.from('profiles').select('short_id').eq('short_id', short_id).single();
   
