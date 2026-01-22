@@ -3,14 +3,11 @@ import { notFound } from "next/navigation"
 import { getDegreeAbbr, GradoAcademico, Genero } from "@/lib/utils"
 import { ProfileCard } from "@/components/feature/ProfileCard"
 
-export default async function ProfilePage({ params }: { params: { short_id: string } }) {
-  // In Next.js 15 params is async, but this is 14 pattern or 15 compatible if awaited? 
-  // Next 15 requires awaiting params. Next 14 does not. 
-  // I will assume it is an object for now, or await it if it's a promise (TS check would be helpful).
-  // Safest: Use `const slug = params.short_id`.
+export default async function ProfilePage({ params }: { params: Promise<{ short_id: string }> }) {
+  const { short_id } = await params
   
   const supabase = await createClient()
-  const { data: profile } = await supabase.from('profiles').select('*').eq('short_id', params.short_id).single()
+  const { data: profile } = await supabase.from('profiles').select('*').eq('short_id', short_id).single()
 
   if (!profile) {
     return (
