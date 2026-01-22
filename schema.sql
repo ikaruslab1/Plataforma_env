@@ -4,6 +4,7 @@ create extension if not exists "uuid-ossp";
 -- Create Enums
 create type grado_academico as enum ('Doctorado', 'Maestría', 'Licenciatura', 'Estudiante');
 create type genero_enum as enum ('Masculino', 'Femenino', 'Neutro');
+create type tipo_participacion as enum ('Ponente', 'Asistente');
 
 -- Create Profiles Tables
 create table profiles (
@@ -13,6 +14,7 @@ create table profiles (
   apellido text not null,
   grado grado_academico not null,
   genero genero_enum not null,
+  participacion tipo_participacion not null default 'Asistente',
   curp text not null,
   correo text not null,
   telefono text not null,

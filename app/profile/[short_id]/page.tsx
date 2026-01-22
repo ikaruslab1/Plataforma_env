@@ -3,8 +3,16 @@ import { notFound } from "next/navigation"
 import { getDegreeAbbr, GradoAcademico, Genero } from "@/lib/utils"
 import { ProfileCard } from "@/components/feature/ProfileCard"
 
-export default async function ProfilePage({ params }: { params: Promise<{ short_id: string }> }) {
+export default async function ProfilePage({ 
+  params,
+  searchParams, 
+}: { 
+  params: Promise<{ short_id: string }>,
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const { short_id } = await params
+  const resolvedSearchParams = await searchParams
+  const isNewUser = resolvedSearchParams.welcome === 'true'
   
   const supabase = await createClient()
   const { data: profile } = await supabase.from('profiles').select('*').eq('short_id', short_id).single()
@@ -31,6 +39,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ short_
             displayName={displayName}
             grado={profile.grado}
             qrData={qrData}
+            isNewUser={isNewUser}
+            participacion={profile.participacion}
         />
     </main>
   )

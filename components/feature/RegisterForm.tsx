@@ -5,8 +5,8 @@ import { registerUser } from "@/app/actions"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Select } from "@/components/ui/Select"
-import { Dialog } from "@/components/ui/Dialog"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 const initialState = {
   success: false,
@@ -16,13 +16,13 @@ const initialState = {
 
 export function RegisterForm({ onCancel }: { onCancel: () => void }) {
   const [state, formAction] = useFormState(registerUser, initialState)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
-    if (state?.success) {
-      setShowSuccess(true)
+    if (state?.success && state?.data?.short_id) {
+      router.push(`/profile/${state.data.short_id}?welcome=true`)
     }
-  }, [state?.success])
+  }, [state?.success, state?.data?.short_id, router])
 
   return (
     <div className="w-full max-w-lg mx-auto p-6 bg-card rounded-xl shadow-lg border border-border animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -67,6 +67,16 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
         </div>
 
         <div className="space-y-2">
+            <label className="text-sm font-medium">Participación</label>
+            <Select name="participacion" required>
+                <option value="">Seleccionar...</option>
+                <option value="Ponente">Ponente</option>
+                <option value="Asistente">Asistente</option>
+            </Select>
+            {state?.errors?.participacion && <p className="text-destructive text-xs">{state.errors.participacion}</p>}
+        </div>
+
+        <div className="space-y-2">
           <label className="text-sm font-medium">CURP</label>
           <Input name="curp" placeholder="CLAVE CURP 18 DIGITOS" maxLength={18} className="uppercase" required />
           {state?.errors?.curp && <p className="text-destructive text-xs">{state.errors.curp}</p>}
@@ -102,18 +112,6 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
             <Button type="submit" className="w-full">Registrar</Button>
         </div>
       </form>
-
-      <Dialog isOpen={showSuccess} onClose={() => { setShowSuccess(false); onCancel(); }} title="¡Registro Exitoso!">
-        <div className="space-y-4 text-center">
-            <p className="text-muted-foreground">Tu perfil ha sido creado correctamente.</p>
-            <div className="bg-secondary p-4 rounded-lg border border-border">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">ID de Acceso</p>
-                <p className="text-3xl font-bold tracking-wider text-primary mt-2 font-mono">{state?.data?.short_id}</p>
-            </div>
-            <p className="text-sm text-balance">Guarda este ID en un lugar seguro. Lo necesitarás para ingresar a tu perfil académico.</p>
-            <Button className="w-full" onClick={() => { setShowSuccess(false); onCancel(); }}>Entendido</Button>
-        </div>
-      </Dialog>
     </div>
   )
 }

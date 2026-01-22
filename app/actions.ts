@@ -11,6 +11,7 @@ const registerSchema = z.object({
   grado: z.enum(['Doctorado', 'Maestría', 'Licenciatura', 'Estudiante']),
   genero: z.enum(['Masculino', 'Femenino', 'Neutro']),
   curp: z.string().length(18, "La CURP debe tener 18 caracteres").toUpperCase(), // Simplified regex for now or standard
+  participacion: z.enum(['Ponente', 'Asistente']),
   correo: z.string().email("Correo inválido"),
   confirmarCorreo: z.string().email(),
   telefono: z.string().min(10, "Mínimo 10 dígitos"),
@@ -43,7 +44,7 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
     };
   }
 
-  const { nombre, apellido, grado, genero, curp, correo, telefono } = validatedFields.data;
+  const { nombre, apellido, grado, genero, curp, correo, telefono, participacion } = validatedFields.data;
   
   const supabase = await createClient();
   
@@ -65,6 +66,7 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
     apellido,
     grado,
     genero,
+    participacion,
     curp,
     correo,
     telefono
@@ -85,10 +87,23 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
   };
 }
 
+import { cookies } from "next/headers"
+
 export async function verifyUser(formData: FormData) {
   const short_id = formData.get('short_id') as string;
   
   if(!short_id) return { error: "Ingresa un ID válido." };
+
+  // Lógica de acceso Admin
+  if (short_id === "ADMIN-0000") {
+    (await cookies()).set("admin_session", "true", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24, // 24 horas
+    });
+    return { success: true, redirectUrl: "/admin" };
+  }
   
   const supabase = await createClient();
   const { data, error } = await supabase.from('profiles').select('short_id').eq('short_id', short_id).single();
