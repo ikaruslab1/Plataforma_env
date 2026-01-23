@@ -86,14 +86,14 @@ function EventStatCard({ event }: { event: EventWithStats }) {
         </div>
 
         <div className="flex items-center gap-6">
-            <div className="flex flex-col items-center min-w-[80px]">
-                <span className="text-2xl font-bold text-blue-600">{interestedList.length}</span>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Interesados</span>
+            <div className="flex flex-col items-center min-w-[60px] md:min-w-[80px]">
+                <span className="text-xl md:text-2xl font-bold text-blue-600">{interestedList.length}</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">Interesados</span>
             </div>
             <div className="w-px h-10 bg-gray-200 hidden md:block"></div>
-            <div className="flex flex-col items-center min-w-[80px]">
-                <span className="text-2xl font-bold text-emerald-600">{attendedList.length}</span>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Asistieron</span>
+            <div className="flex flex-col items-center min-w-[60px] md:min-w-[80px]">
+                <span className="text-xl md:text-2xl font-bold text-emerald-600">{attendedList.length}</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground font-medium uppercase tracking-wider">Asistieron</span>
             </div>
             <div className="ml-2 text-gray-400">
                 {isOpen ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}

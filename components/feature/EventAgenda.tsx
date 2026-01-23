@@ -115,7 +115,7 @@ export function EventAgenda({ events, initialAttendance, shortId, userGender }: 
                     <div 
                         key={event.id}
                         className={cn(
-                            "relative group flex flex-col p-5 rounded-xl border transition-all duration-300",
+                            "relative group flex flex-col p-4 md:p-5 rounded-xl border transition-all duration-300",
                             cardStyle
                         )}
                     >
@@ -131,7 +131,7 @@ export function EventAgenda({ events, initialAttendance, shortId, userGender }: 
                             )}
                         </div>
 
-                        <h3 className="font-bold text-lg leading-tight mb-2 tracking-tight">{event.name}</h3>
+                        <h3 className="font-bold text-base md:text-lg leading-tight mb-2 tracking-tight">{event.name}</h3>
                         <p className={cn("text-sm mb-5 leading-relaxed", attended || interested ? "text-gray-300" : "text-muted-foreground")}>
                             {event.description}
                         </p>

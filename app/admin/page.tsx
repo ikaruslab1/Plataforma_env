@@ -122,11 +122,11 @@ export default async function AdminPage({
         </header>
 
         {/* Tabs Navigation */}
-        <div className="flex space-x-1 rounded-xl bg-gray-200/50 p-1 mb-8 w-fit">
+        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-1 rounded-xl bg-gray-200/50 p-1 mb-8 w-full md:w-fit overflow-x-auto whitespace-nowrap">
             <Link
                 href="/admin?tab=database"
                 className={cn(
-                    "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                    "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-1 md:flex-none",
                     currentTab === 'database' 
                         ? "bg-white text-gray-900 shadow-sm" 
                         : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
@@ -138,7 +138,7 @@ export default async function AdminPage({
             <Link
                 href="/admin?tab=agenda"
                 className={cn(
-                    "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                    "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-1 md:flex-none",
                     currentTab === 'agenda' 
                         ? "bg-white text-gray-900 shadow-sm" 
                         : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
@@ -150,7 +150,7 @@ export default async function AdminPage({
             <Link
                 href="/admin?tab=checkin"
                 className={cn(
-                    "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                    "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-1 md:flex-none",
                     currentTab === 'checkin' 
                         ? "bg-white text-gray-900 shadow-sm" 
                         : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
@@ -160,6 +160,7 @@ export default async function AdminPage({
                 Escáner y Asistencia
             </Link>
         </div>
+
 
         {/* Content Area */}
         {currentTab === 'agenda' ? (
@@ -176,7 +177,7 @@ export default async function AdminPage({
              </div>
         ) : (
              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex justify-between items-end">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                      <div>
                         <h2 className="text-xl font-semibold mb-2">Registro de Usuarios</h2>
                         <p className="text-muted-foreground text-sm">Perfiles registrados en la plataforma.</p>
@@ -191,16 +192,16 @@ export default async function AdminPage({
                         <table className="w-full text-center text-sm text-gray-500">
                         <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                             <tr>
-                            <th scope="col" className="px-6 py-4 font-semibold">Acciones</th>
-                            <th scope="col" className="px-6 py-4 font-semibold">ID</th>
-                            <th scope="col" className="px-6 py-4 font-semibold">Participante</th>
-                            <th scope="col" className="px-6 py-4 font-semibold">Rol</th>
-                            <th scope="col" className="px-6 py-4 font-semibold">Contacto</th>
-                            <th scope="col" className="px-6 py-4 font-semibold w-1/4">Eventos / Intereses</th>
+                            <th scope="col" className="px-4 py-3 md:px-6 md:py-4 font-semibold text-left">Acciones</th>
+                            <th scope="col" className="px-4 py-3 md:px-6 md:py-4 font-semibold text-left whitespace-nowrap">ID</th>
+                            <th scope="col" className="px-4 py-3 md:px-6 md:py-4 font-semibold text-left">Participante</th>
+                            <th scope="col" className="px-4 py-3 md:px-6 md:py-4 font-semibold text-left hidden lg:table-cell">Rol</th>
+                            <th scope="col" className="px-4 py-3 md:px-6 md:py-4 font-semibold text-left hidden md:table-cell">Contacto</th>
+                            <th scope="col" className="px-4 py-3 md:px-6 md:py-4 font-semibold text-left w-1/4 hidden lg:table-cell">Eventos / Intereses</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {profiles.map((profile: Profile, index) => (
+                             {profiles.map((profile: Profile, index) => (
                             <tr
                                 key={profile.id}
                                 className={`
@@ -208,22 +209,26 @@ export default async function AdminPage({
                                 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}
                                 `}
                             >
-                                <td className="px-6 py-4 align-top">
+                                <td className="px-4 py-3 md:px-6 md:py-4 align-top">
                                     <AdminUserActions shortId={profile.short_id} nombre={profile.nombre} />
                                 </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 align-top">
+                                <td className="whitespace-nowrap px-4 py-3 md:px-6 md:py-4 font-medium text-gray-900 align-top">
                                 <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                                     {profile.short_id}
                                 </span>
-                                <div className="text-[10px] text-muted-foreground mt-1">
+                                <div className="text-[10px] text-muted-foreground mt-1 lg:hidden">
+                                     {new Date(profile.created_at).toLocaleDateString("es-MX", { day: 'numeric', month: 'short' })}
+                                </div>
+                                <div className="text-[10px] text-muted-foreground mt-1 hidden lg:block">
                                     {new Date(profile.created_at).toLocaleDateString("es-MX", { day: 'numeric', month: 'short' })}
                                 </div>
                                 </td>
-                                <td className="px-6 py-4 text-gray-900 align-top">
+                                <td className="px-4 py-3 md:px-6 md:py-4 text-gray-900 align-top">
                                    <div className="font-medium">{profile.nombre} {profile.apellido}</div>
-                                   <div className="text-xs text-muted-foreground mt-0.5">{profile.grado}</div>
+                                   <div className="text-xs text-muted-foreground mt-0.5 md:hidden">{profile.grado} • {profile.participacion || 'Asistente'}</div>
+                                   <div className="text-xs text-muted-foreground mt-0.5 hidden md:block lg:hidden">{profile.grado}</div>
                                 </td>
-                                <td className="whitespace-nowrap px-6 py-4 align-top">
+                                <td className="whitespace-nowrap px-4 py-3 md:px-6 md:py-4 align-top hidden lg:table-cell">
                                     <span className={cn(
                                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border",
                                         profile.participacion === 'Ponente' 
@@ -233,13 +238,13 @@ export default async function AdminPage({
                                         {profile.participacion || 'Asistente'}
                                     </span>
                                 </td>
-                                <td className="whitespace-nowrap px-6 py-4 font-mono text-xs align-top">
+                                <td className="whitespace-nowrap px-4 py-3 md:px-6 md:py-4 font-mono text-xs align-top hidden md:table-cell">
                                   <div className="flex flex-col gap-1">
                                     <span>{profile.correo}</span>
                                     <span className="text-muted-foreground">{profile.telefono}</span>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 align-top">
+                                <td className="px-4 py-3 md:px-6 md:py-4 align-top hidden lg:table-cell">
                                     <div className="flex flex-col gap-2">
                                         {profile.event_attendance && profile.event_attendance.length > 0 ? (
                                             profile.event_attendance.map((record, idx) => (
@@ -282,7 +287,7 @@ export default async function AdminPage({
                         </table>
                     </div>
                 
-                    <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs text-gray-500 flex justify-between">
+                     <div className="border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs text-gray-500 flex justify-between">
                         <span>Total de registros: {profiles.length}</span>
                     </div>
                 </div>

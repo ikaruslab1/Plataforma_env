@@ -39,7 +39,8 @@ export function ProfileCard({
 
   const handleCopy = async () => {
     try {
-        await navigator.clipboard.writeText(shortId);
+        const url = `${window.location.origin}/?id=${shortId}`;
+        await navigator.clipboard.writeText(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -64,7 +65,7 @@ export function ProfileCard({
             <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
                     {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    {copied ? "Procesado" : "Copiar ID"}
+                    {copied ? "Enlace Copiado" : "Copiar Enlace"}
                 </Button>
                 <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
                     <Printer className="h-4 w-4" /> Imprimir
@@ -80,10 +81,11 @@ export function ProfileCard({
             
             <CardContent className="p-8 text-center space-y-8">
                 <div className="space-y-3">
-                    <p className="text-muted-foreground text-[10px] uppercase tracking-[0.2em]">Titular Certificado</p>
+                    <p className="text-muted-foreground text-[10px] uppercase tracking-[0.2em]"><span className="font-bold">Ciencia con perspectiva:</span> <br />
+Mujeres y Niñas en la Ciencia</p>
                     <h2 className="text-3xl font-bold text-foreground leading-tight">{displayName}</h2>
                     <div className="inline-block bg-secondary px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider text-secondary-foreground border border-border/50">
-                        {grado} • {participacion}
+                        {participacion}
                     </div>
                 </div>
 
@@ -97,10 +99,10 @@ export function ProfileCard({
                 </div>
                 
                 <div className="pt-6 border-t border-border/50">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em]">
-                        <span className="font-bold">Ciencia con perspectiva:</span> <br />
-Mujeres y Niñas en la Ciencia
-
+                    <p className="text-[10px] text-muted-foreground uppercase">
+                        <span className="font-bold">Facultad de Estudios Superiores Acatlán
+</span> <br />
+Unidad de Investigación Multidisciplinaria Aplicada
                     </p>
                 </div>
             </CardContent>
@@ -124,7 +126,7 @@ Mujeres y Niñas en la Ciencia
                 <div className="flex flex-col gap-2">
                     <Button onClick={handleCopy} variant="outline" className="w-full gap-2">
                         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                        {copied ? "ID Copiado" : "Copiar ID"}
+                        {copied ? "Enlace Copiado" : "Copiar Enlace"}
                     </Button>
                     <Button onClick={handlePrint} variant="outline" className="w-full gap-2">
                         <Printer className="h-4 w-4" /> Imprimir Credencial

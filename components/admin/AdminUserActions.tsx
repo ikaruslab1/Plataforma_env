@@ -40,7 +40,7 @@ export function AdminUserActions({ shortId, nombre }: AdminUserActionsProps) {
             <Dialog isOpen={isOpen} onClose={() => setIsOpen(false)} title="Acceso Rápido">
                 <div className="flex flex-col items-center justify-center space-y-6 py-4">
                     <div className="text-center space-y-1">
-                        <p className="font-semibold text-lg">{nombre}</p>
+                        <p className="font-semibold text-lg"> {nombre}</p>
                         <p className="font-mono text-sm text-muted-foreground">{shortId}</p>
                     </div>
 
