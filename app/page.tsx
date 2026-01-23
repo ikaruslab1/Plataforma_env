@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { LoginForm } from "@/components/feature/LoginForm"
 import { RegisterForm } from "@/components/feature/RegisterForm"
 import { motion, AnimatePresence } from "framer-motion"
@@ -19,7 +19,9 @@ export default function Home() {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="w-full"
           >
-             <LoginForm onRegisterClick={() => setView('register')} />
+             <Suspense fallback={null}>
+                <LoginForm onRegisterClick={() => setView('register')} />
+             </Suspense>
           </motion.div>
         ) : (
           <motion.div 

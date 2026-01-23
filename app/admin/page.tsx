@@ -191,12 +191,12 @@ export default async function AdminPage({
                         <table className="w-full text-center text-sm text-gray-500">
                         <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                             <tr>
+                            <th scope="col" className="px-6 py-4 font-semibold">Acciones</th>
                             <th scope="col" className="px-6 py-4 font-semibold">ID</th>
                             <th scope="col" className="px-6 py-4 font-semibold">Participante</th>
                             <th scope="col" className="px-6 py-4 font-semibold">Rol</th>
                             <th scope="col" className="px-6 py-4 font-semibold">Contacto</th>
                             <th scope="col" className="px-6 py-4 font-semibold w-1/4">Eventos / Intereses</th>
-                            <th scope="col" className="px-6 py-4 font-semibold">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -208,6 +208,9 @@ export default async function AdminPage({
                                 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}
                                 `}
                             >
+                                <td className="px-6 py-4 align-top">
+                                    <AdminUserActions shortId={profile.short_id} nombre={profile.nombre} />
+                                </td>
                                 <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-900 align-top">
                                 <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                                     {profile.short_id}
@@ -260,15 +263,12 @@ export default async function AdminPage({
                                         )}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 align-top">
-                                    <AdminUserActions shortId={profile.short_id} nombre={profile.nombre} />
-                                </td>
                             </tr>
                             ))}
                             
                             {profiles.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
+                                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
                                 <div className="flex flex-col items-center justify-center p-4">
                                     <p className="font-semibold text-gray-900">No se encontraron resultados</p>
                                     <p className="mt-1">
