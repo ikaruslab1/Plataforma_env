@@ -73,7 +73,6 @@ export function QRScannerModal({
             onScan={handleScan}
             // Configuramos componentes para limpiar la UI
             components={{
-              audio: false,
               torch: true,
               zoom: true,
               finder: true,
