@@ -55,7 +55,8 @@ export default async function ProfilePage({
             events={events} 
             // @ts-ignore
             initialAttendance={attendance} 
-            shortId={profile.short_id} 
+            shortId={profile.short_id}
+            userGender={profile.genero}
         />
     </main>
   )

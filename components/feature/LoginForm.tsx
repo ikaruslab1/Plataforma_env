@@ -4,7 +4,7 @@ import { verifyUser } from "@/app/actions"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 function SubmitButton() {
     const { pending } = useFormStatus()
@@ -18,6 +18,8 @@ function SubmitButton() {
 export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) {
     const [error, setError] = useState("")
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const defaultId = searchParams.get('id') || ""
 
     async function handleSubmit(formData: FormData) {
         setError("")
@@ -43,6 +45,7 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
                 <div className="space-y-2">
                     <Input 
                         name="short_id" 
+                        defaultValue={defaultId}
                         placeholder="ID Corto (ej. LIC-8921)" 
                         className="text-center text-lg h-12 tracking-widest uppercase placeholder:normal-case placeholder:tracking-normal placeholder:text-sm" 
                         required 

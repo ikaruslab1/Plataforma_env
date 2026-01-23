@@ -24,11 +24,19 @@ interface EventAgendaProps {
   events: Event[]
   initialAttendance: Attendance[]
   shortId: string
+  userGender?: string
 }
 
-export function EventAgenda({ events, initialAttendance, shortId }: EventAgendaProps) {
+export function EventAgenda({ events, initialAttendance, shortId, userGender }: EventAgendaProps) {
   const [attendance, setAttendance] = useState<Attendance[]>(initialAttendance)
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set())
+
+  const getInterestedLabel = () => {
+      if (userGender === 'Femenino') return 'Interesada'
+      if (userGender === 'Neutro') return 'Interesade'
+      return 'Interesado'
+  }
+
 
   const handleInterestToggle = async (eventId: string) => {
     setLoadingIds(prev => new Set(prev).add(eventId))
@@ -146,7 +154,7 @@ export function EventAgenda({ events, initialAttendance, shortId }: EventAgendaP
                             ) : interested ? (
                                 <>
                                     <CheckCircleIcon className="mr-2 h-4 w-4" />
-                                    Interesado
+                                    {getInterestedLabel()}
                                 </>
                             ) : (
                                 "Me interesa"

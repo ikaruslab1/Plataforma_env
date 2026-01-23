@@ -74,7 +74,7 @@ export function ProfileCard({
 
         <Card className="overflow-hidden border-2 shadow-2xl print:shadow-none print:border-2 print:border-black">
             <div className="bg-primary text-primary-foreground p-8 text-center print:bg-black print:text-white">
-                 <p className="text-xs font-medium opacity-70 uppercase tracking-[0.2em] mb-2">ID Académico</p>
+                 <p className="text-xs font-medium opacity-70 uppercase tracking-[0.2em] mb-2">ID de Acceso</p>
                  <h1 className="text-4xl font-bold tracking-wider font-mono select-all">{shortId}</h1>
             </div>
             
@@ -98,7 +98,9 @@ export function ProfileCard({
                 
                 <div className="pt-6 border-t border-border/50">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em]">
-                         Academic Profiles System
+                        <span className="font-bold">Ciencia con perspectiva:</span> <br />
+Mujeres y Niñas en la Ciencia
+
                     </p>
                 </div>
             </CardContent>

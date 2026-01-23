@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/server"
 import { SearchBar } from "./search-bar"
 import { AdminCheckIn } from "@/components/AdminCheckIn"
 import { getEvents } from "@/app/actions"
-import { UsersIcon, QrCodeIcon, CalendarCheckIcon, CalendarIcon } from "lucide-react"
+import { UsersIcon, QrCodeIcon, CalendarCheckIcon, CalendarIcon, ClipboardListIcon } from "lucide-react"
+import { EventsStats } from "./events-stats"
+import { AdminUserActions } from "@/components/admin/AdminUserActions"
 import { cn } from "@/lib/utils"
 
 // Aseguramos que la página sea dinámica por la comprobación de cookies
@@ -47,7 +49,7 @@ export default async function AdminPage({
   // 2. Obtener parámetros
   const params = await searchParams
   const query = params.query || ""
-  const currentTab = params.tab || "database" // 'database' | 'checkin'
+  const currentTab = params.tab || "database" // 'database' | 'checkin' | 'agenda'
 
   // 3. Preparar datos según la pestaña
   const supabase = await createClient()
@@ -78,6 +80,29 @@ export default async function AdminPage({
       }
   } else if (currentTab === 'checkin') {
       events = await getEvents()
+  } else if (currentTab === 'agenda') {
+      const { data: agendaData, error: agendaError } = await supabase
+        .from("events")
+        .select(`
+          *,
+          event_attendance (
+            is_interested,
+            has_attended,
+            profiles (
+              short_id,
+              nombre,
+              apellido,
+              grado,
+              genero
+            )
+          )
+        `)
+        .order("event_date", { ascending: true })
+      
+      if (!agendaError && agendaData) {
+          // @ts-ignore
+          events = agendaData
+      }
   }
 
   return (
@@ -111,6 +136,18 @@ export default async function AdminPage({
                 Base de Datos
             </Link>
             <Link
+                href="/admin?tab=agenda"
+                className={cn(
+                    "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                    currentTab === 'agenda' 
+                        ? "bg-white text-gray-900 shadow-sm" 
+                        : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
+                )}
+            >
+                <ClipboardListIcon className="h-4 w-4" />
+                Agenda y Estadísticas
+            </Link>
+            <Link
                 href="/admin?tab=checkin"
                 className={cn(
                     "flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
@@ -125,7 +162,10 @@ export default async function AdminPage({
         </div>
 
         {/* Content Area */}
-        {currentTab === 'checkin' ? (
+        {currentTab === 'agenda' ? (
+            // @ts-ignore
+            <EventsStats events={events} />
+        ) : currentTab === 'checkin' ? (
              <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-2">Validación de Asistencia</h2>
@@ -156,6 +196,7 @@ export default async function AdminPage({
                             <th scope="col" className="px-6 py-4 font-semibold">Rol</th>
                             <th scope="col" className="px-6 py-4 font-semibold">Contacto</th>
                             <th scope="col" className="px-6 py-4 font-semibold w-1/4">Eventos / Intereses</th>
+                            <th scope="col" className="px-6 py-4 font-semibold">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -218,6 +259,9 @@ export default async function AdminPage({
                                             <span className="text-xs text-muted-foreground italic">Sin actividad registrada</span>
                                         )}
                                     </div>
+                                </td>
+                                <td className="px-6 py-4 align-top">
+                                    <AdminUserActions shortId={profile.short_id} nombre={profile.nombre} />
                                 </td>
                             </tr>
                             ))}
