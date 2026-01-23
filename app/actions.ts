@@ -27,6 +27,17 @@ export type FormState = {
   data?: { short_id: string; nombre: string; apellido: string };
 };
 
+
+function formatName(name: string): string {
+  const lowercaseExceptions = ['de', 'la', 'del', 'los', 'das', 'dos', 'da', 'e', 'y'];
+  return name.trim().toLowerCase().split(/\s+/).map((word, index) => {
+    if (index > 0 && lowercaseExceptions.includes(word)) {
+      return word;
+    }
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(' ');
+}
+
 export async function registerUser(prevState: FormState, formData: FormData): Promise<FormState> {
   const rawData = Object.fromEntries(formData.entries());
   
@@ -44,7 +55,11 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
     };
   }
 
-  const { nombre, apellido, grado, genero, curp, correo, telefono, participacion } = validatedFields.data;
+  let { nombre, apellido, grado, genero, curp, correo, telefono, participacion } = validatedFields.data;
+
+  // Formatting strings
+  nombre = formatName(nombre);
+  apellido = formatName(apellido);
   
   const supabase = await createClient();
   
@@ -90,7 +105,8 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
 import { cookies } from "next/headers"
 
 export async function verifyUser(formData: FormData) {
-  const short_id = formData.get('short_id') as string;
+  const raw_id = formData.get('short_id') as string;
+  const short_id = raw_id ? raw_id.trim().toUpperCase() : '';
   
   if(!short_id) return { error: "Ingresa un ID válido." };
 

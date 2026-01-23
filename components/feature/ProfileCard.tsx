@@ -109,9 +109,9 @@ export function ProfileCard({
             <div className="space-y-4 text-center">
                 <p className="text-muted-foreground">Tu perfil está listo.</p>
                 
-                <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200">
-                    <p className="font-semibold text-sm mb-1">⚠️ IMPORTANTE</p>
-                    <p className="text-xs">Guarda tu ID para iniciar sesión en el futuro. Es tu única llave de acceso.</p>
+                <div className="bg-blue-100 p-4 rounded-lg border border-blue-500">
+                    <p className="font-semibold text-xl mb-1 text-black">⚠️ IMPORTANTE</p>
+                    <p className="text-xs text-black">Guarda tu ID para iniciar sesión en el futuro. Es tu única llave de acceso.</p>
                 </div>
 
                 <div className="bg-secondary p-4 rounded-lg border border-border my-4">

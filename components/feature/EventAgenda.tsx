@@ -50,7 +50,7 @@ export function EventAgenda({ events, initialAttendance, shortId }: EventAgendaP
       const res = await toggleEventInterest(shortId, eventId)
       if (!res.success) {
         // Revert if error
-        alert("Error al actualizar interés") // Simple alert for now as I don't see a toast lib installed yet
+        alert("Error al actualizar interés") 
         
         // Revert local state
         setAttendance(prev => {
@@ -63,7 +63,6 @@ export function EventAgenda({ events, initialAttendance, shortId }: EventAgendaP
       }
     } catch (error) {
       console.error(error)
-      // Revert on error logic same as above...
     } finally {
       setLoadingIds(prev => {
         const next = new Set(prev)
@@ -76,10 +75,10 @@ export function EventAgenda({ events, initialAttendance, shortId }: EventAgendaP
   if (events.length === 0) return null
 
   return (
-    <div className="w-full max-w-md mt-8 space-y-6">
+    <div className="w-full max-w-md mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="space-y-2 text-center">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900">Agenda del Evento</h2>
-            <p className="text-sm text-muted-foreground">Marca los eventos que te interesan para recibir recordatorios.</p>
+            <p className="text-sm text-muted-foreground">Marca los eventos que te interesan.</p>
         </div>
 
         <div className="space-y-4">
@@ -89,45 +88,65 @@ export function EventAgenda({ events, initialAttendance, shortId }: EventAgendaP
                 const isLoading = loadingIds.has(event.id)
                 const date = new Date(event.event_date)
 
+                // Determine Card Style based on state
+                let cardStyle = "bg-white border-gray-200 text-gray-900 shadow-sm hover:shadow-md"
+                let buttonStyle = "border border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+                let dateBadgeStyle = "bg-gray-100 text-gray-500"
+
+                if (attended) {
+                    cardStyle = "bg-emerald-500 border-emerald-600 text-white shadow-md ring-1 ring-emerald-600"
+                    buttonStyle = "bg-white/20 hover:bg-white/30 text-white border-transparent backdrop-blur-sm"
+                    dateBadgeStyle = "bg-emerald-600/50 text-emerald-50"
+                } else if (interested) {
+                    cardStyle = "bg-gray-900 border-gray-800 text-white shadow-lg ring-1 ring-gray-950"
+                    buttonStyle = "bg-white/10 hover:bg-white/20 text-white border-transparent backdrop-blur-sm"
+                    dateBadgeStyle = "bg-gray-800 text-gray-300"
+                }
+
                 return (
                     <div 
                         key={event.id}
                         className={cn(
-                            "relative group flex flex-col p-4 rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md",
-                            interested ? "border-primary/50 bg-primary/5" : "border-border"
+                            "relative group flex flex-col p-5 rounded-xl border transition-all duration-300",
+                            cardStyle
                         )}
                     >
-                        <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                        <div className="flex justify-between items-start mb-3">
+                            <div className={cn("flex items-center text-xs font-medium px-2 py-1 rounded-md transition-colors", dateBadgeStyle)}>
                                 <CalendarIcon className="mr-1 h-3 w-3" />
                                 {new Intl.DateTimeFormat("es-MX", { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(date)}
                             </div>
                             {attended && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-white text-emerald-600">
                                     ¡Asististe!
                                 </span>
                             )}
                         </div>
 
-                        <h3 className="font-semibold text-lg leading-tight mb-1">{event.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{event.description}</p>
+                        <h3 className="font-bold text-lg leading-tight mb-2 tracking-tight">{event.name}</h3>
+                        <p className={cn("text-sm mb-5 leading-relaxed", attended || interested ? "text-gray-300" : "text-muted-foreground")}>
+                            {event.description}
+                        </p>
 
                         <button
                             onClick={() => handleInterestToggle(event.id)}
                             disabled={isLoading || attended}
                             className={cn(
-                                "mt-auto w-full inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2",
-                                interested 
-                                    ? "bg-primary text-primary-foreground shadow hover:bg-primary/90" 
-                                    : "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground"
+                                "mt-auto w-full inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2",
+                                buttonStyle
                             )}
                         >
                             {isLoading ? (
                                 <span className="animate-spin mr-2">⏳</span> 
+                            ) : attended ? (
+                                <>
+                                    <CheckCircleIcon className="mr-2 h-4 w-4" />
+                                    Asistencia Registrada
+                                </>
                             ) : interested ? (
                                 <>
                                     <CheckCircleIcon className="mr-2 h-4 w-4" />
-                                    Te interesa
+                                    Interesado
                                 </>
                             ) : (
                                 "Me interesa"
