@@ -83,7 +83,7 @@ export function EventAgenda({ events, initialAttendance, shortId, userGender }: 
   if (events.length === 0) return null
 
   return (
-    <div className="w-full max-w-md mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="space-y-2 text-center">
             <h2 className="text-2xl font-bold tracking-tight text-gray-900">Agenda del Evento</h2>
             <p className="text-sm text-muted-foreground">Marca los eventos que te interesan.</p>
