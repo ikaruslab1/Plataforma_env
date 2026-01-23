@@ -115,3 +115,96 @@ export async function verifyUser(formData: FormData) {
   // We return the path to redirect to, handled by client to avoid 'NEXT_REDIRECT' error in try/catch blocks if any
   return { success: true, redirectUrl: `/profile/${data.short_id}` };
 }
+
+// --- Event Actions ---
+
+export async function getEvents() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: true });
+  if (error) {
+    console.error("Error fetching events:", error);
+    return [];
+  }
+  return data;
+}
+
+export async function getUserAttendance(short_id: string) {
+  const supabase = await createClient();
+  
+  // First get profile_id
+  const { data: profile } = await supabase.from('profiles').select('id').eq('short_id', short_id).single();
+  if (!profile) return [];
+
+  const { data: attendance, error } = await supabase
+    .from('event_attendance')
+    .select('event_id, is_interested, has_attended')
+    .eq('profile_id', profile.id);
+
+  if (error) {
+    console.error("Error fetching attendance:", error);
+    return [];
+  }
+  return attendance;
+}
+
+export async function toggleEventInterest(short_id: string, event_id: string) {
+  const supabase = await createClient();
+  
+  // Get profile
+  const { data: profile } = await supabase.from('profiles').select('id').eq('short_id', short_id).single();
+  if (!profile) return { success: false, message: "Usuario no encontrado" };
+
+  // Check existing record
+  const { data: existing } = await supabase
+    .from('event_attendance')
+    .select('is_interested')
+    .eq('profile_id', profile.id)
+    .eq('event_id', event_id)
+    .single();
+
+  if (existing) {
+    // Toggle
+    const { error } = await supabase
+      .from('event_attendance')
+      .update({ is_interested: !existing.is_interested })
+      .eq('profile_id', profile.id)
+      .eq('event_id', event_id);
+      
+    if (error) return { success: false, message: "Error al actualizar" };
+  } else {
+    // Insert
+    const { error } = await supabase
+      .from('event_attendance')
+      .insert({ profile_id: profile.id, event_id: event_id, is_interested: true });
+      
+    if (error) return { success: false, message: "Error al crear registro" };
+  }
+
+  return { success: true };
+}
+
+export async function confirmEventAttendanceAction(short_id: string, event_id: string) {
+  const supabase = await createClient();
+
+  // Get profile and name for feedback
+  const { data: profile } = await supabase.from('profiles').select('id, nombre, apellido').eq('short_id', short_id).single();
+  if (!profile) return { success: false, message: "Usuario no encontrado" };
+
+  // Upsert to ensure record exists and set has_attended to true
+  // We use upsert to handle both existing and new records (e.g. user didn't click "interested" but showed up)
+  const { error } = await supabase
+    .from('event_attendance')
+    .upsert({ 
+      profile_id: profile.id, 
+      event_id: event_id, 
+      has_attended: true 
+    }, { onConflict: 'profile_id, event_id' })
+    .select();
+
+  if (error) {
+    console.error("Attendance Error", error);
+    return { success: false, message: "Error al registrar asistencia" };
+  }
+
+  return { success: true, message: `Asistencia registrada para ${profile.nombre} ${profile.apellido}` };
+}

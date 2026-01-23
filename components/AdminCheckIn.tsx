@@ -1,23 +1,30 @@
 "use client"
 
 import { useState } from "react"
-import { QrCode, UserCheck, X, CheckCircle, AlertCircle } from "lucide-react"
+import { QrCode, UserCheck, X, CheckCircle, AlertCircle, Calendar } from "lucide-react"
 import { QRScannerModal, ScannedData } from "./QRScannerModal"
+import { confirmEventAttendanceAction } from "@/app/actions"
 
-export function AdminCheckIn() {
+// Define Event type locally or import if shared
+type Event = {
+  id: string
+  name: string
+}
+
+export function AdminCheckIn({ events }: { events: Event[] }) {
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [scannedData, setScannedData] = useState<ScannedData | null>(null)
+  const [selectedEventId, setSelectedEventId] = useState<string>("")
+  
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   const handleScanSuccess = (data: ScannedData) => {
     setScannedData(data)
     setIsScannerOpen(false)
     setErrorMsg(null)
-    setSuccessMsg("¡Código escaneado correctamente!")
-    
-    // Auto-ocultar el mensaje de éxito después de un tiempo
-    setTimeout(() => setSuccessMsg(null), 3000)
+    // Removed auto-success message here, waiting for manual confirmation
   }
 
   const handleScanError = (msg: string) => {
@@ -31,17 +38,72 @@ export function AdminCheckIn() {
     setSuccessMsg(null)
   }
 
+  const handleConfirmAttendance = async () => {
+    if (!scannedData || !selectedEventId) {
+      setErrorMsg("Debes seleccionar un evento y escanear un usuario.")
+      return
+    }
+
+    setIsConfirming(true)
+    try {
+      // Extract Short ID (assuming it is the third part of QR or passed explicitly in ScannedData)
+      // The scanner logic sets `id` as `parts[2]` which is the short_id.
+      const res = await confirmEventAttendanceAction(scannedData.id, selectedEventId)
+      
+      if (res.success) {
+        setSuccessMsg(res.message || "Asistencia registrada exitosamente.")
+        setScannedData(null) // Reset for next scan
+        setTimeout(() => setSuccessMsg(null), 4000)
+      } else {
+        setErrorMsg(res.message || "Error al registrar asistencia.")
+      }
+    } catch (err) {
+      console.error(err)
+      setErrorMsg("Ocurrió un error inesperado.")
+    } finally {
+      setIsConfirming(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6 w-full mb-8">
+      {/* Selector de Evento */}
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-xl shadow-lg text-white">
+        <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">
+          Modo de Operación
+        </label>
+        <div className="flex items-center gap-4">
+          <Calendar className="w-8 h-8 text-indigo-400"/>
+          <select 
+            value={selectedEventId}
+            onChange={(e) => setSelectedEventId(e.target.value)}
+            className="bg-gray-700/50 border border-gray-600 text-white text-lg rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
+          >
+            <option value="" disabled>-- Selecciona el Evento Activo --</option>
+            {events?.map(event => (
+              <option key={event.id} value={event.id}>
+                {event.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Sección de Acción Principal */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+      <div className={`
+        flex items-center justify-between bg-white p-4 rounded-xl border shadow-sm transition-all
+        ${!selectedEventId ? 'opacity-50 pointer-events-none grayscale' : ''}
+      `}>
         <div>
           <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Check-in de Asistentes</h2>
-          <p className="text-xs text-gray-500">Escanea el código QR para validar el ingreso</p>
+          <p className="text-xs text-gray-500">
+            {selectedEventId ? "Sistema listo para escanear" : "Selecciona un evento primero"}
+          </p>
         </div>
         <button
           onClick={() => setIsScannerOpen(true)}
-          className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-all shadow-md active:scale-95 font-medium text-sm"
+          disabled={!selectedEventId}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition-all shadow-md active:scale-95 font-medium text-sm disabled:bg-gray-400"
         >
           <QrCode className="w-4 h-4" />
           Escanear Asistente
@@ -75,53 +137,41 @@ export function AdminCheckIn() {
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3 text-white">
               <UserCheck className="w-6 h-6" />
-              <h3 className="text-lg font-bold">Identidad Verificada</h3>
+              <h3 className="text-lg font-bold">Confirmar Asistencia</h3>
             </div>
-            <span className="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm border border-white/30">
-              Datos del QR
-            </span>
+            <button
+               onClick={handleClear}
+               className="text-white/80 hover:text-white"
+            >
+              <X className="w-5 h-5"/>
+            </button>
           </div>
 
           <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Nombre Completo
+                Asistente
               </label>
-              <input 
-                type="text" 
-                readOnly 
-                value={scannedData.name} 
-                className="w-full bg-gray-50 border-0 border-b-2 border-gray-200 rounded-t-lg px-3 py-2 text-gray-900 font-semibold focus:ring-0 focus:border-indigo-500 transition-colors"
-                title="Nombre extraído del QR"
-              />
+              <div className="font-medium text-lg text-gray-900 border-b border-gray-100 pb-1">
+                {scannedData.name}
+              </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                Grado Académico
+                Grado / Perfil
               </label>
-              <input 
-                type="text" 
-                readOnly 
-                value={scannedData.degree} 
-                className="w-full bg-gray-50 border-0 border-b-2 border-gray-200 rounded-t-lg px-3 py-2 text-gray-900 font-medium focus:ring-0 focus:border-indigo-500 transition-colors"
-              />
+              <div className="font-medium text-gray-700 border-b border-gray-100 pb-1">
+                {scannedData.degree}
+              </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                ID de Registro
+                ID Sistema
               </label>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  readOnly 
-                  value={scannedData.id} 
-                  className="w-full bg-blue-50/50 border-0 border-b-2 border-blue-200 text-blue-800 font-mono text-lg tracking-wide rounded-t-lg px-3 py-2 focus:ring-0"
-                />
-                <div className="absolute right-2 top-2 text-green-500">
-                  <CheckCircle className="w-5 h-5" />
-                </div>
+               <div className="font-mono text-indigo-600 font-bold border-b border-gray-100 pb-1">
+                {scannedData.id}
               </div>
             </div>
           </div>
@@ -131,16 +181,21 @@ export function AdminCheckIn() {
               onClick={handleClear}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium hover:underline transition-all"
             >
-              Cerrar Vista
+              Cancelar
             </button>
             <button 
-              onClick={() => {
-                handleClear()
-                setIsScannerOpen(true)
-              }}
-              className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-md transform transition hover:-translate-y-0.5"
+              onClick={handleConfirmAttendance}
+              disabled={isConfirming}
+              className={`
+                px-6 py-2.5 rounded-lg text-sm font-bold shadow-md transform transition-all flex items-center gap-2
+                ${isConfirming 
+                  ? "bg-gray-400 cursor-not-allowed" 
+                  : "bg-green-600 text-white hover:bg-green-700 hover:-translate-y-0.5"
+                }
+              `}
             >
-              Validar y Siguiente
+              {isConfirming ? "Procesando..." : "Confirmar Asistencia"}
+              {!isConfirming && <CheckCircle className="w-4 h-4" />}
             </button>
           </div>
         </div>

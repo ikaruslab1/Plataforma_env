@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
 import { getDegreeAbbr, GradoAcademico, Genero } from "@/lib/utils"
 import { ProfileCard } from "@/components/feature/ProfileCard"
+import { getEvents, getUserAttendance } from "@/app/actions"
+import { EventAgenda } from "@/components/feature/EventAgenda"
 
 export default async function ProfilePage({ 
   params,
@@ -32,6 +34,10 @@ export default async function ProfilePage({
   const displayName = `${abbr} ${fullName}`
   const qrData = `${fullName} | ${profile.grado} | ${profile.short_id}`
 
+  const events = await getEvents()
+  // @ts-ignore
+  const attendance = await getUserAttendance(short_id)
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/20">
         <ProfileCard 
@@ -41,6 +47,15 @@ export default async function ProfilePage({
             qrData={qrData}
             isNewUser={isNewUser}
             participacion={profile.participacion}
+        />
+        
+        {/* Agenda de Eventos */}
+        <EventAgenda 
+            // @ts-ignore
+            events={events} 
+            // @ts-ignore
+            initialAttendance={attendance} 
+            shortId={profile.short_id} 
         />
     </main>
   )

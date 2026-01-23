@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { SearchBar } from "./search-bar"
 import { AdminCheckIn } from "@/components/AdminCheckIn"
+import { getEvents } from "@/app/actions"
 
 // Aseguramos que la página sea dinámica por la comprobación de cookies
 export const dynamic = "force-dynamic"
@@ -83,7 +84,8 @@ export default async function AdminPage({
 
         {/* Check-In Section */}
         <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-700 delay-100">
-           <AdminCheckIn />
+           {/* @ts-ignore */}
+           <AdminCheckIn events={await getEvents()}/>
         </div>
 
         {/* Table Container */}
