@@ -85,8 +85,8 @@ export function EventAgenda({ events, initialAttendance, shortId, userGender }: 
   return (
     <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="space-y-2 text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900">Agenda del Evento</h2>
-            <p className="text-sm text-muted-foreground">Marca los eventos que te interesan.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-brand-darkest">Agenda del Evento</h2>
+            <p className="text-sm text-muted-foreground">Marque los eventos que le interesan.</p>
         </div>
 
         <div className="space-y-4">
@@ -97,18 +97,20 @@ export function EventAgenda({ events, initialAttendance, shortId, userGender }: 
                 const date = new Date(event.event_date)
 
                 // Determine Card Style based on state
-                let cardStyle = "bg-white border-gray-200 text-gray-900 shadow-sm hover:shadow-md"
-                let buttonStyle = "border border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+                let cardStyle = "bg-white border-gray-200 text-brand-darkest shadow-sm hover:shadow-md hover:border-brand-main/30"
+                let buttonStyle = "border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 hover:text-brand-main hover:border-brand-main/50"
                 let dateBadgeStyle = "bg-gray-100 text-gray-500"
 
                 if (attended) {
-                    cardStyle = "bg-emerald-500 border-emerald-600 text-white shadow-md ring-1 ring-emerald-600"
-                    buttonStyle = "bg-white/20 hover:bg-white/30 text-white border-transparent backdrop-blur-sm"
-                    dateBadgeStyle = "bg-emerald-600/50 text-emerald-50"
+                    // Attended -> Brand Secondary (Teal)
+                    cardStyle = "bg-brand-secondary border-brand-secondary text-white shadow-md ring-1 ring-brand-secondary"
+                    buttonStyle = "bg-white/20 hover:bg-white/30 text-white border-transparent backdrop-blur-sm shadow-sm"
+                    dateBadgeStyle = "bg-white/20 text-white"
                 } else if (interested) {
-                    cardStyle = "bg-gray-900 border-gray-800 text-white shadow-lg ring-1 ring-gray-950"
-                    buttonStyle = "bg-white/10 hover:bg-white/20 text-white border-transparent backdrop-blur-sm"
-                    dateBadgeStyle = "bg-gray-800 text-gray-300"
+                    // Interested -> Brand Main (Purple)
+                    cardStyle = "bg-brand-main border-brand-main text-white shadow-lg ring-1 ring-brand-main"
+                    buttonStyle = "bg-white/10 hover:bg-white/20 text-white border-transparent backdrop-blur-sm shadow-sm"
+                    dateBadgeStyle = "bg-brand-darkest/50 text-brand-lightest"
                 }
 
                 return (
@@ -125,14 +127,14 @@ export function EventAgenda({ events, initialAttendance, shortId, userGender }: 
                                 {new Intl.DateTimeFormat("es-MX", { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(date)}
                             </div>
                             {attended && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-white text-emerald-600">
-                                    ¡Asististe!
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-white text-brand-secondary shadow-sm">
+                                    ¡Usted asistió!
                                 </span>
                             )}
                         </div>
 
                         <h3 className="font-bold text-base md:text-lg leading-tight mb-2 tracking-tight">{event.name}</h3>
-                        <p className={cn("text-sm mb-5 leading-relaxed", attended || interested ? "text-gray-300" : "text-muted-foreground")}>
+                        <p className={cn("text-sm mb-5 leading-relaxed", attended || interested ? "text-brand-lightest/90" : "text-muted-foreground")}>
                             {event.description}
                         </p>
 

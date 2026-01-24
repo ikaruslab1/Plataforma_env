@@ -116,24 +116,24 @@ export function AccountRecoveryModal({ isOpen, onClose, onLogin }: AccountRecove
                         </>
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 text-center">
-                                <p className="text-green-800 text-sm font-medium mb-1">¡Registro Encontrado!</p>
-                                <h3 className="text-lg font-bold text-gray-900">{user.nombre} {user.apellido}</h3>
-                                <p className="text-xs text-green-700 mt-1">{user.grado} • {user.short_id}</p>
+                            <div className="bg-brand-secondary/10 border border-brand-secondary/30 rounded-lg p-4 mb-6 text-center">
+                                <p className="text-brand-secondary text-sm font-bold uppercase tracking-wider mb-1">¡Registro Encontrado!</p>
+                                <h3 className="text-lg font-bold text-brand-darkest">{user.nombre} {user.apellido}</h3>
+                                <p className="text-xs text-brand-main mt-1">{user.grado} • {user.short_id}</p>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3">
-                                <Button onClick={handleLoginClick} className="w-full bg-primary hover:bg-primary/90">
+                                <Button onClick={handleLoginClick} className="w-full bg-brand-main hover:bg-brand-main/90 text-white shadow-md">
                                     <LogIn className="h-4 w-4 mr-2" />
                                     Iniciar Sesión Ahora
                                 </Button>
                                 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <Button variant="outline" onClick={handleCopy} className="w-full">
-                                        {copied ? <Check className="h-4 w-4 mr-2 text-green-500" /> : <Copy className="h-4 w-4 mr-2" />}
+                                    <Button variant="outline" onClick={handleCopy} className="w-full hover:bg-brand-lightest hover:text-brand-darkest hover:border-brand-main/20">
+                                        {copied ? <Check className="h-4 w-4 mr-2 text-brand-secondary" /> : <Copy className="h-4 w-4 mr-2" />}
                                         {copied ? "Copiado" : "Copiar ID"}
                                     </Button>
-                                    <Button variant="outline" onClick={handlePrint} className="w-full">
+                                    <Button variant="outline" onClick={handlePrint} className="w-full hover:bg-brand-lightest hover:text-brand-darkest hover:border-brand-main/20">
                                         <Printer className="h-4 w-4 mr-2" />
                                         Imprimir
                                     </Button>

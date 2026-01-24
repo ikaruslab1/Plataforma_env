@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 
 import { AccountRecoveryModal } from "./AccountRecoveryModal"
 
 function SubmitButton() {
     const { pending } = useFormStatus()
     return (
-        <Button className="w-full h-11" disabled={pending}>
+        <Button className="w-full h-11 bg-brand-main hover:bg-brand-main/90 text-white transition-all shadow-md hover:shadow-lg" disabled={pending}>
             {pending ? "Verificando..." : "Ingresar"}
         </Button>
     )
@@ -24,6 +25,17 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
     const router = useRouter()
     const searchParams = useSearchParams()
     
+    // Rotating Text State
+    const [greetingIndex, setGreetingIndex] = useState(0)
+    const greetings = ["Bienvenido", "Bienvenida", "Bienvenide"]
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setGreetingIndex((prev) => (prev + 1) % greetings.length)
+        }, 3000)
+        return () => clearInterval(interval)
+    }, [])
+
     const [prefix, setPrefix] = useState("")
     const [suffix, setSuffix] = useState("")
     const suffixInputRef = useRef<HTMLInputElement>(null)
@@ -76,13 +88,26 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
     }
 
     return (
-        <div className="w-full max-w-sm mx-auto p-8 animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-full max-w-sm mx-auto p-8 animate-in fade-in zoom-in-95 duration-500 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 shadow-xl shadow-brand-darkest/5">
             <div className="text-center mb-10">
-                <div className="h-12 w-12 bg-primary text-primary-foreground rounded-xl flex items-center justify-center mx-auto mb-4 font-bold text-xl shadow-lg">
-                    AP
+                <div className="flex justify-center mb-6">
+                    <img src="/ium-negro.svg" alt="Logo UIM-II" className="h-16 w-auto drop-shadow-sm" />
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight mb-2">Bienvenido</h1>
-                <p className="text-muted-foreground">Ingresa tu ID para ver tu perfil</p>
+                <div className="h-10 mb-2 relative overflow-hidden flex justify-center items-center">
+                    <AnimatePresence mode="wait">
+                        <motion.h1
+                            key={greetings[greetingIndex]}
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="text-3xl font-bold tracking-tight absolute inset-x-0 text-brand-main"
+                        >
+                            {greetings[greetingIndex]}
+                        </motion.h1>
+                    </AnimatePresence>
+                </div>
+                <p className="text-muted-foreground">Ingrese su ID para ver su perfil</p>
             </div>
 
             <form action={handleSubmit} className="space-y-4">
@@ -91,7 +116,7 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
                     <input type="hidden" name="short_id" value={`${prefix}-${suffix}`} />
                     
                     <div className="flex items-center gap-3">
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 group">
                             <Input 
                                 value={prefix}
                                 onChange={(e) => {
@@ -136,15 +161,15 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
                                         suffixInputRef.current?.focus();
                                     }
                                 }}
-                                placeholder="DOC, MTR..." 
-                                className="text-center text-lg h-14 tracking-widest uppercase placeholder:normal-case placeholder:text-xs placeholder:text-muted-foreground/70" 
+                                placeholder="DOC" 
+                                className="text-center text-lg h-14 tracking-widest uppercase placeholder:normal-case placeholder:text-xs placeholder:text-muted-foreground/70 border-brand-light/50 focus-visible:ring-brand-secondary/50 focus-visible:border-brand-secondary transition-all bg-background group-hover:border-brand-light" 
                                 required 
                             />
                         </div>
                         
-                        <span className="text-4xl font-black text-foreground select-none pb-1">–</span>
+                        <span className="text-4xl font-black select-none pb-1">–</span>
                         
-                        <div className="relative flex-1">
+                        <div className="relative flex-1 group">
                              <Input 
                                 ref={suffixInputRef}
                                 value={suffix}
@@ -152,8 +177,8 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
                                     // Only numbers
                                     setSuffix(e.target.value.replace(/[^0-9]/g, ''));
                                 }}
-                                placeholder="XXXX" 
-                                className="text-center text-lg h-14 tracking-widest uppercase placeholder:normal-case placeholder:text-xs placeholder:text-muted-foreground/70" 
+                                placeholder="1234" 
+                                className="text-center text-lg h-14 tracking-widest uppercase placeholder:normal-case placeholder:text-xs placeholder:text-muted-foreground/70 border-brand-light/50 focus-visible:ring-brand-secondary/50 focus-visible:border-brand-secondary transition-all bg-background group-hover:border-brand-light" 
                                 required 
                                 maxLength={6}
                             />
@@ -169,16 +194,16 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
                     <button 
                         type="button"
                         onClick={() => setShowRecovery(true)}
-                        className="text-xs text-muted-foreground hover:text-primary transition-colors hover:underline"
+                        className="text-xs text-muted-foreground hover:text-brand-main transition-colors hover:underline"
                     >
-                        ¿Olvidaste tu ID?
+                        ¿Olvido su ID?
                     </button>
                 </div>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-dashed border-border text-center">
-                <p className="text-sm text-muted-foreground mb-4">¿No tienes un registro?</p>
-                <Button variant="outline" className="w-full" onClick={onRegisterClick}>
+            <div className="mt-8 pt-6 border-t border-dashed border-brand-light/30 text-center">
+                <p className="text-sm text-muted-foreground mb-4">¿No tiene un registro?</p>
+                <Button variant="outline" className="w-full border-brand-main/20 hover:bg-brand-lightest hover:text-brand-darkest transition-colors mb-2" onClick={onRegisterClick}>
                     Crear Nuevo Registro
                 </Button>
             </div>

@@ -25,7 +25,7 @@ function SubmitButton({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto"
+      className="inline-flex items-center justify-center rounded-lg bg-brand-main px-4 py-2 text-sm font-medium text-white hover:bg-brand-main/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full sm:w-auto shadow-sm"
     >
       {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {label}
@@ -58,12 +58,12 @@ export function EventManagement({ initialEvents }: { initialEvents: any[] }) {
     <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h2 className="text-xl font-semibold mb-2">Gestión de Agenda del Evento</h2>
+          <h2 className="text-xl font-semibold mb-2 text-brand-darkest">Gestión de Agenda del Evento</h2>
           <p className="text-muted-foreground text-sm">Administra los eventos, fechas y horarios.</p>
         </div>
         <button
           onClick={handleCreate}
-          className="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 rounded-lg bg-brand-main px-4 py-2 text-sm font-medium text-white hover:bg-brand-main/90 transition-colors shadow-sm"
         >
           <PlusIcon className="h-4 w-4" />
           Agregar Evento
@@ -73,7 +73,7 @@ export function EventManagement({ initialEvents }: { initialEvents: any[] }) {
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-500">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-700">
+            <thead className="bg-brand-secondary/10 text-xs uppercase text-brand-darkest/70">
               <tr>
                 <th scope="col" className="px-6 py-4 font-semibold">Evento</th>
                 <th scope="col" className="px-6 py-4 font-semibold">Fecha y Hora</th>
@@ -89,13 +89,13 @@ export function EventManagement({ initialEvents }: { initialEvents: any[] }) {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-gray-400" />
+                        <CalendarIcon className="h-4 w-4 text-brand-secondary" />
                         {new Date(event.event_date).toLocaleString("es-MX", { 
                             weekday: 'short', 
                             day: 'numeric', 
                             month: 'short', 
                             year: 'numeric',
-                            hour: '2-digit',
+                            hour: '2-digit', 
                             minute: '2-digit'
                         })}
                     </div>
@@ -104,7 +104,7 @@ export function EventManagement({ initialEvents }: { initialEvents: any[] }) {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleEdit(event)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 hover:text-brand-main hover:bg-brand-light/20 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <PencilIcon className="h-4 w-4" />
@@ -188,7 +188,7 @@ function EventModal({ event, onClose }: { event: Event | null, onClose: () => vo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b p-4 bg-gray-50/50">
-          <h3 className="font-semibold text-gray-900">
+          <h3 className="font-semibold text-brand-darkest">
             {event ? "Editar Evento" : "Nuevo Evento"}
           </h3>
           <button
@@ -210,7 +210,7 @@ function EventModal({ event, onClose }: { event: Event | null, onClose: () => vo
               id="name"
               required
               defaultValue={event?.name}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-main focus:ring-1 focus:ring-brand-main transition-all"
               placeholder="Ej. Conferencia Magistral"
             />
           </div>
@@ -222,7 +222,7 @@ function EventModal({ event, onClose }: { event: Event | null, onClose: () => vo
               id="description"
               rows={3}
               defaultValue={event?.description}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all resize-none"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-main focus:ring-1 focus:ring-brand-main transition-all resize-none"
               placeholder="Detalles sobre el evento..."
             />
           </div>
@@ -235,7 +235,7 @@ function EventModal({ event, onClose }: { event: Event | null, onClose: () => vo
               id="event_date"
               required
               defaultValue={defaultDate}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-all"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand-main focus:ring-1 focus:ring-brand-main transition-all"
             />
           </div>
 

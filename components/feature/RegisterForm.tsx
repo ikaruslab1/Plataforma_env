@@ -81,8 +81,8 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
 
   return (
     <div className="w-full max-w-lg mx-auto p-6 bg-card rounded-xl shadow-lg border border-border animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <h2 className="text-2xl font-bold mb-6 text-center text-foreground font-sans">Nuevo Registro</h2>
-      
+      <h2 className="text-2xl font-bold text-center text-brand-darkest font-sans">Nuevo Registro</h2>
+      <p className="text-center text-brand-main/80 font-medium mb-8">Ciencia con perspectiva: Mujeres y Niñas en la Ciencia</p>
       <form action={formAction} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
