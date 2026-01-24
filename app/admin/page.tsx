@@ -4,10 +4,12 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { SearchBar } from "./search-bar"
 import { AdminCheckIn } from "@/components/AdminCheckIn"
-import { getEvents } from "@/app/actions"
-import { UsersIcon, QrCodeIcon, CalendarCheckIcon, CalendarIcon, ClipboardListIcon } from "lucide-react"
-import { EventsStats } from "./events-stats"
+// ... imports
+import { getEvents, getBeneficiaryReport, BeneficiaryReportItem } from "@/app/actions"
+import { UsersIcon, QrCodeIcon, CalendarCheckIcon, CalendarIcon, ClipboardListIcon, ShieldIcon, FileBarChartIcon } from "lucide-react"
+import { EventManagement } from "@/components/admin/EventManagement"
 import { AdminUserActions } from "@/components/admin/AdminUserActions"
+import { BeneficiaryReportTable } from "@/components/admin/BeneficiaryReportTable"
 import { cn } from "@/lib/utils"
 
 // Aseguramos que la página sea dinámica por la comprobación de cookies
@@ -40,21 +42,37 @@ export default async function AdminPage({
 }) {
   // 1. Verificación de seguridad (Server-Side)
   const cookieStore = await cookies()
-  const isAdmin = cookieStore.get("admin_session")?.value === "true"
+  const role = cookieStore.get("admin_role")?.value
+  const legacySession = cookieStore.get("admin_session")?.value
 
-  if (!isAdmin) {
+  if (!role && legacySession !== "true") {
     redirect("/")
   }
+  
+  const currentRole = role || (legacySession === "true" ? "super_admin" : null);
+
+  if (!currentRole) {
+      redirect("/")
+  }
+
+  const isSuperAdmin = currentRole === 'super_admin';
 
   // 2. Obtener parámetros
   const params = await searchParams
   const query = params.query || ""
-  const currentTab = params.tab || "database" // 'database' | 'checkin' | 'agenda'
+  const currentTab = params.tab || "database" // 'database' | 'checkin' | 'agenda' | 'report'
+
+  // Refuse access to protected tabs if not super admin
+  if ((currentTab === 'agenda' || currentTab === 'report') && !isSuperAdmin) {
+      redirect("/admin?tab=database");
+  }
 
   // 3. Preparar datos según la pestaña
   const supabase = await createClient()
   let profiles: Profile[] = []
   let events = []
+  // @ts-ignore
+  let reportData: { asistentes: BeneficiaryReportItem[], ponentes: BeneficiaryReportItem[] } = { asistentes: [], ponentes: [] }
 
   if (currentTab === 'database') {
       let supabaseQuery = supabase
@@ -80,28 +98,12 @@ export default async function AdminPage({
       }
   } else if (currentTab === 'checkin') {
       events = await getEvents()
-  } else if (currentTab === 'agenda') {
-      const { data: agendaData, error: agendaError } = await supabase
-        .from("events")
-        .select(`
-          *,
-          event_attendance (
-            is_interested,
-            has_attended,
-            profiles (
-              short_id,
-              nombre,
-              apellido,
-              grado,
-              genero
-            )
-          )
-        `)
-        .order("event_date", { ascending: true })
-      
-      if (!agendaError && agendaData) {
-          // @ts-ignore
-          events = agendaData
+  } else if (currentTab === 'agenda' && isSuperAdmin) {
+      events = await getEvents()
+  } else if (currentTab === 'report' && isSuperAdmin) {
+      const result = await getBeneficiaryReport()
+      if (result.success && result.data) {
+          reportData = result.data
       }
   }
 
@@ -112,9 +114,19 @@ export default async function AdminPage({
         {/* Header */}
         <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Panel de Administración
-            </h1>
+            <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                Panel de Administración
+                </h1>
+                <span className={cn(
+                    "px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                    isSuperAdmin 
+                        ? "bg-purple-50 text-purple-700 border-purple-200" 
+                        : "bg-blue-50 text-blue-700 border-blue-200"
+                )}>
+                    {isSuperAdmin ? "Super Admin" : "Staff"}
+                </span>
+            </div>
             <p className="mt-1 text-sm text-gray-500">
               Sistema de gestión centralizada.
             </p>
@@ -135,18 +147,36 @@ export default async function AdminPage({
                 <UsersIcon className="h-4 w-4" />
                 Base de Datos
             </Link>
-            <Link
-                href="/admin?tab=agenda"
-                className={cn(
-                    "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-1 md:flex-none",
-                    currentTab === 'agenda' 
-                        ? "bg-white text-gray-900 shadow-sm" 
-                        : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
-                )}
-            >
-                <ClipboardListIcon className="h-4 w-4" />
-                Agenda y Estadísticas
-            </Link>
+            
+            {isSuperAdmin && (
+                <>
+                <Link
+                    href="/admin?tab=agenda"
+                    className={cn(
+                        "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-1 md:flex-none",
+                        currentTab === 'agenda' 
+                            ? "bg-white text-gray-900 shadow-sm" 
+                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
+                    )}
+                >
+                    <ClipboardListIcon className="h-4 w-4" />
+                    Gestión de Agenda
+                </Link>
+                <Link
+                    href="/admin?tab=report"
+                    className={cn(
+                        "flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 flex-1 md:flex-none",
+                        currentTab === 'report' 
+                            ? "bg-white text-gray-900 shadow-sm" 
+                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
+                    )}
+                >
+                    <FileBarChartIcon className="h-4 w-4" />
+                    SIGECO
+                </Link>
+                </>
+            )}
+
             <Link
                 href="/admin?tab=checkin"
                 className={cn(
@@ -157,15 +187,17 @@ export default async function AdminPage({
                 )}
             >
                 <QrCodeIcon className="h-4 w-4" />
-                Escáner y Asistencia
+                Escáner de Asistencia
             </Link>
         </div>
 
 
         {/* Content Area */}
-        {currentTab === 'agenda' ? (
+        {currentTab === 'agenda' && isSuperAdmin ? (
             // @ts-ignore
-            <EventsStats events={events} />
+            <EventManagement initialEvents={events} />
+        ) : currentTab === 'report' && isSuperAdmin ? (
+             <BeneficiaryReportTable asistentes={reportData.asistentes} ponentes={reportData.ponentes} />
         ) : currentTab === 'checkin' ? (
              <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="mb-6">
@@ -297,3 +329,4 @@ export default async function AdminPage({
     </main>
   )
 }
+
