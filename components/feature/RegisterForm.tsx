@@ -29,7 +29,12 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
     curp: "",
     correo: "",
     confirmarCorreo: "",
-    telefono: ""
+    telefono: "",
+    // New fields
+    noCurp: false,
+    codigo_identidad: "",
+    fecha_nacimiento: "",
+    nacionalidad: ""
   })
 
   // Load from Local Storage on mount
@@ -53,7 +58,7 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
       }
     }
     
-    // Show dialog if CURP is registered
+    // Show dialog if CURP/ID is registered
     if (state?.curpRegistered) {
         setShowExistDialog(true)
     }
@@ -69,12 +74,16 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    // Auto-uppercase CURP for better UX
-    const newValue = name === 'curp' ? value.toUpperCase() : value;
+    // Auto-uppercase CURP/Passport for better UX
+    const newValue = (name === 'curp' || name === 'codigo_identidad') ? value.toUpperCase() : value;
     
     const newFormData = { ...formData, [name]: newValue }
     setFormData(newFormData)
     localStorage.setItem("academic_register_form", JSON.stringify(newFormData))
+  }
+
+  const toggleNoCurp = () => {
+      setFormData(prev => ({ ...prev, noCurp: !prev.noCurp }))
   }
 
   const hasErrors = !state.success && (state.message || (state.errors && Object.keys(state.errors).length > 0));
@@ -84,6 +93,10 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
       <h2 className="text-2xl font-bold text-center text-brand-darkest font-sans">Nuevo Registro</h2>
       <p className="text-center text-brand-main/80 font-medium mb-8">Ciencia con perspectiva: Mujeres y Niñas en la Ciencia</p>
       <form action={formAction} className="space-y-4">
+        
+        {/* Hidden input for noCurp flag */}
+        <input type="hidden" name="noCurp" value={formData.noCurp ? 'true' : 'false'} />
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Nombre*</label>
@@ -158,18 +171,78 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
             {state?.errors?.participacion && <p className="text-destructive text-xs">{state.errors.participacion}</p>}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">CURP*</label>
-          <Input 
-            name="curp" 
-            placeholder="CLAVE CURP 18 DIGITOS" 
-            maxLength={18} 
-            className="uppercase" 
-            required 
-            value={formData.curp}
-            onChange={handleChange}
-          />
-          {state?.errors?.curp && <p className="text-destructive text-xs">{state.errors.curp}</p>}
+        {/* Identity Section */}
+        <div className="space-y-2 p-4 bg-muted/30 rounded-lg border border-border">
+             <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium">
+                    {formData.noCurp ? "Identificación Internacional" : "Identificación Nacional"}
+                </label>
+                <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={toggleNoCurp}
+                    className="text-xs h-7 text-brand-main hover:text-brand-darkest"
+                >
+                    {formData.noCurp ? "Tengo CURP" : "No cuento con CURP"}
+                </Button>
+            </div>
+
+            {!formData.noCurp ? (
+                <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                    <label className="text-xs text-muted-foreground">CURP</label>
+                    <Input 
+                        name="curp" 
+                        placeholder="CLAVE CURP 18 DIGITOS" 
+                        maxLength={18} 
+                        className="uppercase" 
+                        value={formData.curp}
+                        onChange={handleChange}
+                    />
+                    {/* Helper text if needed */}
+                    <p className="text-[10px] text-muted-foreground">Ingresa tu CURP completa.</p>
+                    {state?.errors?.curp && <p className="text-destructive text-xs">{state.errors.curp}</p>}
+                </div>
+            ) : (
+                <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                     <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Código de Identidad (Pasaporte/ID)</label>
+                        <Input 
+                            name="codigo_identidad" 
+                            placeholder="Número de Pasaporte o ID" 
+                            className="uppercase" 
+                            value={formData.codigo_identidad}
+                            onChange={handleChange}
+                        />
+                         <p className="text-[10px] text-muted-foreground">Opcional si ingresas Fecha de Nacimiento y Nacionalidad.</p>
+                        {state?.errors?.codigo_identidad && <p className="text-destructive text-xs">{state.errors.codigo_identidad}</p>}
+                     </div>
+                     
+                     <div className="grid grid-cols-2 gap-3">
+                         <div className="space-y-1">
+                            <label className="text-xs text-muted-foreground">Fecha de Nacimiento</label>
+                            <Input 
+                                name="fecha_nacimiento" 
+                                type="date"
+                                value={formData.fecha_nacimiento}
+                                onChange={handleChange}
+                            />
+                            {state?.errors?.fecha_nacimiento && <p className="text-destructive text-xs">{state.errors.fecha_nacimiento}</p>}
+                         </div>
+                         <div className="space-y-1">
+                            <label className="text-xs text-muted-foreground">Nacionalidad</label>
+                            <Input 
+                                name="nacionalidad" 
+                                placeholder="País" 
+                                value={formData.nacionalidad}
+                                onChange={handleChange}
+                            />
+                            {state?.errors?.nacionalidad && <p className="text-destructive text-xs">{state.errors.nacionalidad}</p>}
+                         </div>
+                     </div>
+                     <p className="text-[10px] text-muted-foreground">Fecha y Nacionalidad son opcionales si ingresas Código de Identidad.</p>
+                </div>
+            )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -247,17 +320,17 @@ export function RegisterForm({ onCancel }: { onCancel: () => void }) {
       >
         <div className="space-y-4">
             <p className="text-muted-foreground">
-                La CURP ingresada ya se encuentra registrada en el sistema.
+                {state.message || "Este usuario ya se encuentra registrado."}
             </p>
             <div className="p-3 bg-amber-50 rounded-lg text-sm text-amber-900 border border-amber-200">
-                Si olvidaste tu ID de acceso, puedes recuperarlo utilizando tu CURP.
+                Si olvidaste tu ID de acceso, puedes recuperarlo utilizando tu información.
             </div>
             <div className="flex flex-col gap-2 pt-2">
                 <Button onClick={handleGoToRecovery} className="w-full">
                     Ir a Recuperación de ID
                 </Button>
                 <Button variant="outline" onClick={() => setShowExistDialog(false)} className="w-full">
-                    Corregir CURP
+                    Corregir Información
                 </Button>
             </div>
         </div>

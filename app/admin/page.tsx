@@ -1,7 +1,7 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { SearchBar } from "./search-bar"
 import { AdminCheckIn } from "@/components/AdminCheckIn"
 // ... imports
@@ -68,7 +68,7 @@ export default async function AdminPage({
   }
 
   // 3. Preparar datos según la pestaña
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   let profiles: Profile[] = []
   let events = []
   // @ts-ignore
@@ -92,6 +92,10 @@ export default async function AdminPage({
       }
 
       const { data, error } = await supabaseQuery
+      if (error) {
+          console.error("Admin Database Fetch Error:", error);
+           // Optional: You could set a variable to show an error banner in the UI
+      }
       if (!error && data) {
           // @ts-ignore
           profiles = data

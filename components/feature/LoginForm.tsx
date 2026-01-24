@@ -27,7 +27,7 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
     
     // Rotating Text State
     const [greetingIndex, setGreetingIndex] = useState(0)
-    const greetings = ["Bienvenido", "Bienvenida", "Bienvenide"]
+    const greetings = ["Bienvenido", "Bienvenida"]
 
     useEffect(() => {
         const interval = setInterval(() => {

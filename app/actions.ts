@@ -10,14 +10,54 @@ const registerSchema = z.object({
   apellido: z.string().min(2, "Mínimo 2 caracteres"),
   grado: z.enum(['Doctorado', 'Maestría', 'Licenciatura', 'Estudiante']),
   genero: z.enum(['Masculino', 'Femenino', 'Neutro']),
-  curp: z.string().length(18, "La CURP debe tener 18 caracteres").toUpperCase(), // Simplified regex for now or standard
   participacion: z.enum(['Ponente', 'Asistente']),
   correo: z.string().email("Correo inválido"),
   confirmarCorreo: z.string().email(),
   telefono: z.string().min(10, "Mínimo 10 dígitos"),
-}).refine((data) => data.correo === data.confirmarCorreo, {
-  message: "Los correos no coinciden",
-  path: ["confirmarCorreo"],
+  
+  // Optional fields for flexvalidation
+  curp: z.string().optional(),
+  noCurp: z.string().optional(),
+  fecha_nacimiento: z.string().optional(),
+  nacionalidad: z.string().optional(),
+  codigo_identidad: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // Email validation
+  if (data.correo !== data.confirmarCorreo) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Los correos no coinciden",
+      path: ["confirmarCorreo"],
+    });
+  }
+
+  // Identity logic:
+  // Must have CURP, OR (Identity Code), OR (Date of Birth AND Nationality)
+  const hasCurp = data.curp && data.curp.length === 18;
+  const hasPassport = data.codigo_identidad && data.codigo_identidad.length >= 3;
+  const hasBio = data.fecha_nacimiento && data.nacionalidad;
+
+  if (!hasCurp && !hasPassport && !hasBio) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Debes ingresar tu CURP, o tu Código de Identidad (Pasaporte), o tu Fecha de Nacimiento y Nacionalidad.",
+        path: ["curp"], // Attach error to curp or general
+      });
+      // Also potentially attach to other fields for UI highlighting
+      if (data.noCurp === 'true') {
+         if (!hasPassport) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Requerido si no tiene CURP", path: ["codigo_identidad"] });
+         if (!hasBio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Requerido si no tiene Pasaporte", path: ["fecha_nacimiento"] });
+      }
+  }
+
+  // Validate specific formats if provided
+  if (data.curp && data.curp.length > 0 && data.curp.length !== 18) {
+      ctx.addIssue({
+         code: z.ZodIssueCode.custom,
+         message: "La CURP debe tener 18 caracteres",
+         path: ["curp"],
+       });
+  }
 });
 
 export type FormState = {
@@ -43,7 +83,9 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
   const rawData = Object.fromEntries(formData.entries());
   
   // Data cleaning
-  rawData.curp = (rawData.curp as string).toUpperCase();
+  if (rawData.curp) {
+      rawData.curp = (rawData.curp as string).toUpperCase();
+  }
 
   // Zod validation
   const validatedFields = registerSchema.safeParse(rawData);
@@ -52,11 +94,11 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
     return {
       success: false,
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Error de validación. Revisa los campos.",
+      message: "Error de validación. Revisa los campos requeridos.",
     };
   }
 
-  let { nombre, apellido, grado, genero, curp, correo, telefono, participacion } = validatedFields.data;
+  let { nombre, apellido, grado, genero, curp, correo, telefono, participacion, noCurp, fecha_nacimiento, nacionalidad, codigo_identidad } = validatedFields.data;
 
   // Formatting strings
   nombre = formatName(nombre);
@@ -64,22 +106,31 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
   
   const supabase = await createClient();
   
-  // Check if CURP is already registered
-  const { data: existingCurp } = await supabase.from('profiles').select('short_id').eq('curp', rawData.curp).single();
-  
-  if (existingCurp) {
-      return { 
-          success: false, 
-          curpRegistered: true, 
-          message: "La CURP ya se encuentra registrada. Serás redirigido a la recuperación de cuenta." 
-      };
+  // Check existence
+  // 1. Check CURP if provided
+  if (curp && curp.length === 18) {
+      const { data: existingCurp } = await supabase.from('profiles').select('short_id').eq('curp', curp).single();
+      if (existingCurp) {
+          return { success: false, curpRegistered: true, message: "La CURP ya se encuentra registrada." };
+      }
   }
+  
+  // 2. Check Identity Code if provided
+  if (codigo_identidad && codigo_identidad.length >= 3) {
+      const { data: existingPassport } = await supabase.from('profiles').select('short_id').eq('codigo_identidad', codigo_identidad).single();
+      if (existingPassport) {
+          return { success: false, curpRegistered: true, message: "El código de identidad ya se encuentra registrado." };
+      }
+  }
+
+  // 3. Optional: Check DOB + Name + Nationality? 
+  // For now, we assume this combination might not be unique enough or we skip it to avoid false positives 
+  // unless strictly requested. The Prompt didn't explicitly ask for duplicates check on this, just logic to allow sending.
 
   // Generate ID
   let short_id = generateShortId(grado as GradoAcademico);
   let attempts = 0;
   
-  // Simple collision check loop (max 3 tries)
   while (attempts < 3) {
       const { data } = await supabase.from('profiles').select('short_id').eq('short_id', short_id).single();
       if (!data) break; // Unique
@@ -87,22 +138,28 @@ export async function registerUser(prevState: FormState, formData: FormData): Pr
       attempts++;
   }
   
-  const { error } = await supabase.from('profiles').insert({
+  const dbData: any = {
     short_id,
     nombre,
     apellido,
     grado,
     genero,
     participacion,
-    curp,
     correo,
-    telefono
-  });
+    telefono,
+    // Add conditional fields
+    curp: (curp && curp.length === 18) ? curp : null,
+    codigo_identidad: codigo_identidad || null,
+    fecha_nacimiento: fecha_nacimiento || null,
+    nacionalidad: nacionalidad || null 
+  };
+  
+  const { error } = await supabase.from('profiles').insert(dbData);
 
   if (error) {
     console.error("Supabase Error:", error);
     if (error.code === '23505') { // Unique violation
-       return { success: false, message: "La CURP ya está registrada." };
+       return { success: false, message: "El usuario ya está registrado." };
     }
     return { success: false, message: "Error al registrar en base de datos. Intente de nuevo." };
   }
@@ -367,6 +424,8 @@ export async function confirmEventAttendanceAction(short_id: string, event_id: s
 
 // --- Account Recovery ---
 
+// --- Account Recovery ---
+
 export async function recoverAccountByCurp(query: string) {
   const supabase = await createClient();
   const cleanQuery = query.trim().toUpperCase();
@@ -401,6 +460,71 @@ export async function recoverAccountByCurp(query: string) {
   return { success: true, user: data[0] };
 }
 
+export async function recoverAccountByIdentityCode(query: string) {
+  const supabase = createClient();
+  const cleanQuery = query.trim();
+
+  if (cleanQuery.length < 3) {
+      return { success: false, message: "Ingresa al menos 3 caracteres." };
+  }
+
+  const { data, error } = await (await supabase)
+      .from('profiles')
+      .select('short_id, nombre, apellido, grado, codigo_identidad')
+      .ilike('codigo_identidad', `${cleanQuery}%`) // Search by prefix too
+      .limit(5);
+
+  if (error) {
+      console.error("Identity Recovery Error:", error);
+      return { success: false, message: "Error al buscar." };
+  }
+
+  if (!data || data.length === 0) {
+      return { success: false, message: "No se encontró ningún registro con este código." };
+  }
+
+  if (data.length > 1) {
+       return { success: false, message: `Múltiples coincidencias (${data.length}). Sé más específico.` };
+  }
+
+  return { success: true, user: data[0] };
+}
+
+export async function recoverAccountByBio(fecha_nacimiento: string, grado: string, nacionalidad: string) {
+    const supabase = await createClient();
+    
+    // We expect exact matches here for security/precision as these are common fields
+    let query = supabase
+        .from('profiles')
+        .select('short_id, nombre, apellido, grado')
+        .eq('fecha_nacimiento', fecha_nacimiento)
+        .eq('grado', grado);
+
+    if (nacionalidad) {
+        query = query.ilike('nacionalidad', nacionalidad);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+        console.error("Bio Recovery Error:", error);
+        return { success: false, message: "Error al buscar." };
+    }
+
+    if (!data || data.length === 0) {
+        return { success: false, message: "No se encontraron registros con estos datos." };
+    }
+    
+    if (data.length > 1) {
+        // If duplicates (twins with same degree?), we can't easily distinguish. 
+        // Ideally we'd ask for name, but instructions said DOB + Grade (and implicitly Nationality based on context).
+        return { success: false, message: "Múltiples registros encontrados. Contacta a soporte." };
+    }
+
+    return { success: true, user: data[0] };
+}
+
+
 // --- Reports ---
 
 export type BeneficiaryReportItem = {
@@ -427,7 +551,7 @@ export async function getBeneficiaryReport(): Promise<{ success: boolean; data?:
       return { success: false, message: "No tienes permisos." }
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // 1. Get Totals and Threshold
   const { count: totalEvents, error: eventsError } = await supabase.from('events').select('*', { count: 'exact', head: true })
@@ -495,20 +619,33 @@ export async function getBeneficiaryReport(): Promise<{ success: boolean; data?:
         // Rule: "Estudiante" -> SOLO Nombre. Others -> Abbr + Nombre.
         const finalNombre = profile.grado === 'Estudiante' ? profile.nombre : `${abbr} ${profile.nombre}`
 
+        // Format DOB if exists
+        let formattedDob = ""
+        if(profile.fecha_nacimiento){
+             const dobDate = new Date(profile.fecha_nacimiento)
+             const dobDay = String(dobDate.getDate() + 1).padStart(2, '0') // Fix timezone offset or use UTC if needed, usually simple dates might be tricky. Assuming string "YYYY-MM-DD" parsing
+             // Actually, if it's "YYYY-MM-DD", splitting is safer to avoid timezone issues:
+             const [y, m, d] = profile.fecha_nacimiento.split('-')
+             if(y && m && d) formattedDob = `${d}-${m}-${y.slice(-2)}`
+        }
+
+        // Gender Logic: Show only if Nationality exists
+        const showGender = (profile.nacionalidad) ? profile.genero : ""
+
         const item: BeneficiaryReportItem = {
             nombre: finalNombre,
             apellidos: profile.apellido,
             curp: profile.curp || "",
-            codigo_identidad: "",
+            codigo_identidad: profile.codigo_identidad || "",
             correo_electronico: profile.correo,
             correo_alterno: profile.correo,
             nivel_estudios: profile.grado,
             fecha_inicio: formattedDate,
             fecha_termino: formattedDate, // Requested to repeat same date
             calificacion: "",
-            nacionalidad: "",
-            genero: profile.genero,
-            fecha_nacimiento: ""
+            nacionalidad: profile.nacionalidad || "",
+            genero: showGender,
+            fecha_nacimiento: formattedDob
         }
 
         if (profile.participacion === 'Ponente') {

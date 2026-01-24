@@ -132,16 +132,16 @@ function SingleReportTable({ title, data, filenamePrefix }: { title: string, dat
                                     <td className="px-4 py-2 font-medium text-gray-900">{item.nombre}</td>
                                     <td className="px-4 py-2">{item.apellidos}</td>
                                     <td className="px-4 py-2 font-mono">{item.curp}</td>
-                                    <td className="px-4 py-2 bg-gray-50/50"></td>
+                                    <td className="px-4 py-2 font-mono">{item.codigo_identidad}</td>
                                     <td className="px-4 py-2">{item.correo_electronico}</td>
                                     <td className="px-4 py-2">{item.correo_alterno}</td>
                                     <td className="px-4 py-2">{item.nivel_estudios}</td>
                                     <td className="px-4 py-2 font-mono">{item.fecha_inicio}</td>
                                     <td className="px-4 py-2 font-mono">{item.fecha_termino}</td>
-                                    <td className="px-4 py-2 bg-gray-50/50"></td>
-                                    <td className="px-4 py-2 bg-gray-50/50"></td>
+                                    <td className="px-4 py-2 bg-gray-50/50">{item.calificacion}</td>
+                                    <td className="px-4 py-2">{item.nacionalidad}</td>
                                     <td className="px-4 py-2">{item.genero}</td>
-                                    <td className="px-4 py-2 bg-gray-50/50"></td>
+                                    <td className="px-4 py-2 font-mono">{item.fecha_nacimiento}</td>
                                 </tr>
                             ))}
                             {data.length === 0 && (

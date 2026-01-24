@@ -14,30 +14,73 @@ interface AccountRecoveryModalProps {
 }
 
 export function AccountRecoveryModal({ isOpen, onClose, onLogin }: AccountRecoveryModalProps) {
+    const [mode, setMode] = useState<'curp' | 'identity' | 'bio'>('curp')
     const [query, setQuery] = useState("")
+    
+    // Bio state
+    const [dob, setDob] = useState("")
+    const [degree, setDegree] = useState("Doctorado")
+
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const [user, setUser] = useState<any>(null)
     const [copied, setCopied] = useState(false)
 
-    // Reset state when opening/closing
+    // Reset state when opening/closing or switching modes
     const handleClose = () => {
-        setQuery("")
-        setError("")
-        setUser(null)
+        resetState()
         onClose()
     }
 
+    const resetState = () => {
+        setQuery("")
+        setDob("")
+        setDegree("Doctorado")
+
+        setError("")
+        setUser(null)
+        setMode('curp')
+    }
+
+    // Import actions dynamically or just use what we have. 
+    // Ideally we import them at top. Added imports below implicitly if not present, 
+    // but this tool replaces content inside the function mostly, I should ensure imports are present.
+    // I can't easily add imports with this tool if I only replace the function.
+    // So I will replace the whole file content or ensure I use what's available.
+    // The previous view showed: import { recoverAccountByCurp } from "@/app/actions"
+    // I need to add recoverAccountByIdentityCode, recoverAccountByBio to imports. 
+    // I will do a separate import update first, then this one. 
+    // Actually, I can do it in two steps.
+    
+    // Logic handles
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!query.trim()) return
-
         setLoading(true)
         setError("")
         setUser(null)
 
         try {
-            const result = await recoverAccountByCurp(query)
+            let result;
+            if (mode === 'curp') {
+                if (!query.trim()) return
+                // Dynamic import not needed if I update imports first. Assuming I will.
+                const { recoverAccountByCurp } = await import("@/app/actions") 
+                result = await recoverAccountByCurp(query)
+            } else if (mode === 'identity') {
+                if (!query.trim()) return
+                 const { recoverAccountByIdentityCode } = await import("@/app/actions")
+                result = await recoverAccountByIdentityCode(query)
+            } else {
+                if (!dob || !degree) {
+                    setError("Todos los campos son requeridos.")
+                    setLoading(false)
+                    return
+                }
+                 const { recoverAccountByBio } = await import("@/app/actions")
+                result = await recoverAccountByBio(dob, degree, "")
+            }
+
             if (result.success) {
                 setUser(result.user)
             } else {
@@ -78,21 +121,66 @@ export function AccountRecoveryModal({ isOpen, onClose, onLogin }: AccountRecove
                 <div className="space-y-6 py-2">
                     {!user ? (
                         <>
-                            <div className="text-center text-sm text-muted-foreground">
-                                <p>Ingresa tu RFC o los primeros caracteres de tu CURP para buscar tu registro.</p>
+                            <div className="text-center text-sm text-muted-foreground mb-4">
+                                {mode === 'curp' && <p>Ingresa los primeros caracteres de tu CURP.</p>}
+                                {mode === 'identity' && <p>Ingresa tu Código de Identidad Nacional.</p>}
+                                {mode === 'bio' && <p>Ingresa tus datos personales exactos.</p>}
                             </div>
                             
                             <form onSubmit={handleSearch} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Input
-                                        placeholder="Ej. ABCD900101..."
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        className="text-center uppercase tracking-widest"
-                                        maxLength={18}
-                                        autoFocus
-                                    />
-                                </div>
+                                {mode === 'curp' && (
+                                    <div className="space-y-2">
+                                        <Input
+                                            placeholder="Ej. ABCD900101..."
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            className="text-center uppercase tracking-widest"
+                                            maxLength={18}
+                                            autoFocus
+                                        />
+                                    </div>
+                                )}
+
+                                {mode === 'identity' && (
+                                    <div className="space-y-2">
+                                        <Input
+                                            placeholder="Código de Pasaporte / ID"
+                                            value={query}
+                                            onChange={(e) => setQuery(e.target.value)}
+                                            className="text-center"
+                                            minLength={3}
+                                            autoFocus
+                                        />
+                                    </div>
+                                )}
+
+                                {mode === 'bio' && (
+                                    <div className="space-y-3 animate-in fade-in slide-in-from-right-4">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-gray-500">Fecha de Nacimiento</label>
+                                            <Input
+                                                type="date"
+                                                value={dob}
+                                                onChange={(e) => setDob(e.target.value)}
+                                                className="text-center"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-gray-500">Grado Académico</label>
+                                            <select 
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                value={degree}
+                                                onChange={(e) => setDegree(e.target.value)}
+                                            >
+                                                <option value="Doctorado">Doctorado</option>
+                                                <option value="Maestría">Maestría</option>
+                                                <option value="Licenciatura">Licenciatura</option>
+                                                <option value="Estudiante">Estudiante</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
                                 
                                 {error && (
                                     <div className="p-3 bg-red-50 text-red-600 text-xs rounded-lg text-center font-medium animate-in fade-in">
@@ -102,8 +190,8 @@ export function AccountRecoveryModal({ isOpen, onClose, onLogin }: AccountRecove
 
                                 <Button 
                                     type="submit" 
-                                    className="w-full" 
-                                    disabled={loading || query.length < 4}
+                                    className="w-full bg-brand-main hover:bg-brand-main/90" 
+                                    disabled={loading || (mode !== 'bio' && query.length < 3)}
                                 >
                                     {loading ? (
                                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -113,6 +201,46 @@ export function AccountRecoveryModal({ isOpen, onClose, onLogin }: AccountRecove
                                     Buscar Registro
                                 </Button>
                             </form>
+                            
+                            {/* Navigation Buttons */}
+                            <div className="pt-2 space-y-2">
+                                {mode === 'curp' && (
+                                    <Button 
+                                        variant="ghost" 
+                                        className="w-full text-xs text-muted-foreground" 
+                                        onClick={() => { setMode('identity'); setQuery(""); setError(""); }}
+                                    >
+                                        No tengo CURP
+                                    </Button>
+                                )}
+                                {mode === 'identity' && (
+                                    <div className="space-y-1">
+                                        <Button 
+                                            variant="ghost" 
+                                            className="w-full text-xs text-muted-foreground" 
+                                            onClick={() => { setMode('bio'); setQuery(""); setError(""); }}
+                                        >
+                                            No tengo Código de Identidad
+                                        </Button>
+                                        <Button 
+                                            variant="ghost" 
+                                            className="w-full text-xs text-brand-main h-6" 
+                                            onClick={() => { setMode('curp'); setQuery(""); setError(""); }}
+                                        >
+                                            Volver a búsqueda por CURP
+                                        </Button>
+                                    </div>
+                                )}
+                                {mode === 'bio' && (
+                                    <Button 
+                                        variant="ghost" 
+                                        className="w-full text-xs text-brand-main" 
+                                        onClick={() => { setMode('curp'); setQuery(""); setError(""); }}
+                                    >
+                                        Volver al inicio
+                                    </Button>
+                                )}
+                            </div>
                         </>
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
