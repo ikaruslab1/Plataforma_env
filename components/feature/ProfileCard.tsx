@@ -124,7 +124,7 @@ export function ProfileCard({
 
                 {/* Back Face */}
                 <div 
-                    className="absolute inset-0 h-full w-full rounded-xl bg-brand-main flex flex-col items-center justify-center border-2 border-brand-main shadow-2xl"
+                    className="absolute inset-0 h-full w-full rounded-xl bg-brand-main flex flex-col items-center justify-center border-2 border-brand-main shadow-2xl print:hidden"
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
                     <div className="p-8 flex flex-col items-center justify-center h-full space-y-6">

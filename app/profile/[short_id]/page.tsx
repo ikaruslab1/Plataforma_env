@@ -81,7 +81,7 @@ export default async function ProfilePage({
     <main className="min-h-screen flex flex-col items-center pt-8 md:pt-12 p-4 bg-muted/20 font-sans">
         
         {/* Tabs Navigation */}
-        <div className="flex space-x-1 rounded-xl bg-gray-200/50 p-1 mb-8 w-full max-w-md overflow-x-auto whitespace-nowrap shadow-sm scrollbar-hide">
+        <div className="flex space-x-1 rounded-xl bg-gray-200/50 p-1 mb-8 w-full max-w-md overflow-x-auto whitespace-nowrap shadow-sm scrollbar-hide print:hidden">
             <Link
                 href={`/profile/${short_id}?tab=gafete`}
                 className={cn(
