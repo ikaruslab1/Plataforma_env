@@ -72,12 +72,27 @@ export function LoginForm({ onRegisterClick }: { onRegisterClick: () => void }) 
         }
     }, [searchParams])
 
+    // Load saved ID from localStorage on mount
+    useEffect(() => {
+        const savedId = localStorage.getItem('last_login_id')
+        const paramId = searchParams.get('id')
+        
+        // If we have a saved ID and no ID from URL, use the saved one
+        if (savedId && !paramId && !loginId) {
+            setLoginId(savedId)
+        }
+    }, [])
+
     async function handleSubmit(formData: FormData) {
         setError("")
         const res = await verifyUser(formData)
         if (res?.error) {
             setError(res.error)
         } else if (res?.redirectUrl) {
+           // Save ID to localStorage for next time
+           const fullId = `${prefix}-${suffix}`
+           localStorage.setItem('last_login_id', fullId)
+           
            router.push(res.redirectUrl)
         }
     }
