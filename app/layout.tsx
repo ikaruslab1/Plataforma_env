@@ -9,7 +9,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Academic Profiles",
+  title: "Sistema de Registro y Visualización Académica",
   description: "Sistema de Registro y Visualización Académica",
 };
 
