@@ -564,14 +564,7 @@ export async function getBeneficiaryReport(): Promise<{ success: boolean; data?:
   const supabase = createAdminClient()
 
   // 1. Get Totals and Threshold
-  const { count: totalEvents, error: eventsError } = await supabase.from('events').select('*', { count: 'exact', head: true })
-  
-  if (eventsError || totalEvents === null) {
-      console.error("Error fetching events count", eventsError)
-      return { success: false, message: "Error al calcular eventos." }
-  }
-
-  const requiredThreshold = Math.ceil(totalEvents * 0.70)
+  const requiredThreshold = 3
 
   // 2. Get Profiles with Attendance
   // We need to fetch profiles and their attendance records that have attended = true

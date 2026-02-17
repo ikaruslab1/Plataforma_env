@@ -165,7 +165,7 @@ export function BeneficiaryReportTable({ asistentes, ponentes }: { asistentes: B
              <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-2">Constancia de Asistencia para SIGECO</h2>
                 <p className="text-muted-foreground">
-                    Reporte de usuarios que cumplen con el 70% de asistencia, clasificados por tipo de participación.
+                    Reporte de usuarios que cumplen con el requisito de 3 eventos asistidos, clasificados por tipo de participación.
                 </p>
             </div>
 
