@@ -10,6 +10,7 @@ import { UsersIcon, QrCodeIcon, CalendarCheckIcon, CalendarIcon, ClipboardListIc
 import { EventManagement } from "@/components/admin/EventManagement"
 import { AdminUserActions } from "@/components/admin/AdminUserActions"
 import { BeneficiaryReportTable } from "@/components/admin/BeneficiaryReportTable"
+import { UserExportButtons } from "@/components/admin/UserExportButtons"
 import { cn } from "@/lib/utils"
 
 // Aseguramos que la página sea dinámica por la comprobación de cookies
@@ -218,8 +219,11 @@ export default async function AdminPage({
                         <h2 className="text-xl font-semibold mb-2">Registro de Usuarios</h2>
                         <p className="text-muted-foreground text-sm">Perfiles registrados en la plataforma.</p>
                      </div>
-                     <div className="w-full md:w-96">
-                        <SearchBar />
+                     <div className="w-full md:w-auto flex flex-col md:flex-row gap-2 items-end">
+                        <UserExportButtons users={profiles} />
+                        <div className="w-full md:w-96">
+                            <SearchBar />
+                        </div>
                     </div>
                 </div>
 

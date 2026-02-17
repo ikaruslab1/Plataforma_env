@@ -215,13 +215,18 @@ export async function verifyUser(formData: FormData) {
 // --- Event Actions ---
 
 export async function getEvents() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: true });
-  if (error) {
-    console.error("Error fetching events:", error);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: true });
+    if (error) {
+      console.error("Error fetching events:", error);
+      return [];
+    }
+    return data || [];
+  } catch (error) {
+    console.error("Unexpected error in getEvents:", error);
     return [];
   }
-  return data;
 }
 
 const eventSchema = z.object({
@@ -347,17 +352,22 @@ export async function getUserAttendance(short_id: string) {
 }
 
 export async function getUserAttendanceById(profile_id: string) {
-  const supabase = await createClient();
-  const { data: attendance, error } = await supabase
-    .from('event_attendance')
-    .select('event_id, is_interested, has_attended')
-    .eq('profile_id', profile_id);
+  try {
+    const supabase = await createClient();
+    const { data: attendance, error } = await supabase
+      .from('event_attendance')
+      .select('event_id, is_interested, has_attended')
+      .eq('profile_id', profile_id);
 
   if (error) {
     console.error("Error fetching attendance:", error);
     return [];
   }
-  return attendance;
+  return attendance || [];
+} catch (error) {
+  console.error("Unexpected error in getUserAttendanceById:", error);
+  return [];
+}
 }
 
 export async function toggleEventInterest(short_id: string, event_id: string) {
