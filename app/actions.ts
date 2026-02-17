@@ -564,7 +564,7 @@ export async function getBeneficiaryReport(): Promise<{ success: boolean; data?:
   const supabase = createAdminClient()
 
   // 1. Get Totals and Threshold
-  const requiredThreshold = 3
+  const requiredThreshold = 2
 
   // 2. Get Profiles with Attendance
   // We need to fetch profiles and their attendance records that have attended = true

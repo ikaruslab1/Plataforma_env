@@ -9,15 +9,14 @@ function SingleReportTable({ title, data, filenamePrefix }: { title: string, dat
 
     const handleCopy = () => {
         const headers = [
-            "Nombre", "Apellidos", "CURP", "Código de identidad", 
+            "Nombre Completo", "CURP", "Código de identidad", 
             "Correo electrónico", "Correo alterno", "Nivel de estudios",
             "Fecha de inicio", "Fecha de termino", "Calificación",
             "Nacionalidad", "Género", "Fecha de nacimiento"
         ]
 
         const rows = data.map(item => [
-            item.nombre,
-            item.apellidos,
+            `${item.nombre} ${item.apellidos}`,
             item.curp,
             item.codigo_identidad,
             item.correo_electronico,
@@ -44,15 +43,14 @@ function SingleReportTable({ title, data, filenamePrefix }: { title: string, dat
 
     const handleExportCSV = () => {
         const headers = [
-            "Nombre", "Apellidos", "CURP", "Código de identidad", 
+            "Nombre Completo", "CURP", "Código de identidad", 
             "Correo electrónico", "Correo alterno", "Nivel de estudios",
             "Fecha de inicio", "Fecha de termino", "Calificación",
             "Nacionalidad", "Género", "Fecha de nacimiento"
         ]
 
         const rows = data.map(item => [
-            `"${item.nombre}"`,
-            `"${item.apellidos}"`,
+            `"${item.nombre} ${item.apellidos}"`,
             `"${item.curp}"`,
             `"${item.codigo_identidad}"`,
             `"${item.correo_electronico}"`,
@@ -111,8 +109,7 @@ function SingleReportTable({ title, data, filenamePrefix }: { title: string, dat
                     <table className="w-full text-left text-xs text-gray-500 whitespace-nowrap">
                         <thead className="bg-gray-50 uppercase text-gray-700 font-semibold sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="px-4 py-3 border-b">Nombre</th>
-                                <th className="px-4 py-3 border-b">Apellidos</th>
+                                <th className="px-4 py-3 border-b">Nombre Completo</th>
                                 <th className="px-4 py-3 border-b">CURP</th>
                                 <th className="px-4 py-3 border-b">Cód. Identidad</th>
                                 <th className="px-4 py-3 border-b">Correo</th>
@@ -129,8 +126,7 @@ function SingleReportTable({ title, data, filenamePrefix }: { title: string, dat
                         <tbody className="divide-y divide-gray-100">
                             {data.map((item, idx) => (
                                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                                    <td className="px-4 py-2 font-medium text-gray-900">{item.nombre}</td>
-                                    <td className="px-4 py-2">{item.apellidos}</td>
+                                    <td className="px-4 py-2 font-medium text-gray-900">{item.nombre} {item.apellidos}</td>
                                     <td className="px-4 py-2 font-mono">{item.curp}</td>
                                     <td className="px-4 py-2 font-mono">{item.codigo_identidad}</td>
                                     <td className="px-4 py-2">{item.correo_electronico}</td>
@@ -146,7 +142,7 @@ function SingleReportTable({ title, data, filenamePrefix }: { title: string, dat
                             ))}
                             {data.length === 0 && (
                                 <tr>
-                                    <td colSpan={13} className="px-6 py-12 text-center text-sm text-gray-500">
+                                    <td colSpan={12} className="px-6 py-12 text-center text-sm text-gray-500">
                                         No se encontraron registros para esta categoría.
                                     </td>
                                 </tr>
@@ -165,7 +161,7 @@ export function BeneficiaryReportTable({ asistentes, ponentes }: { asistentes: B
              <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-2">Constancia de Asistencia para SIGECO</h2>
                 <p className="text-muted-foreground">
-                    Reporte de usuarios que cumplen con el requisito de 3 eventos asistidos, clasificados por tipo de participación.
+                    Reporte de usuarios que cumplen con el requisito de 2 eventos asistidos, clasificados por tipo de participación.
                 </p>
             </div>
 

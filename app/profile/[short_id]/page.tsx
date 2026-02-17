@@ -69,7 +69,7 @@ export default async function ProfilePage({
   const totalEvents = events ? events.length : 0
   // @ts-ignore
   const attendedCount = attendance ? attendance.filter(a => a.has_attended).length : 0
-  const requiredEvents = 3
+  const requiredEvents = 2
   const isQualified = attendedCount >= requiredEvents
   // Avoid division by zero
   const progressPercentage = requiredEvents > 0 
